@@ -9,13 +9,15 @@ class Main:
         print("Initialising pygame...")
         pygame.init()
         print("Initialising window...")
-        self.window = Window(size=(1200, 800), fps=180, window_title="Minicraft")
+        self.window = Window(size=(1200, 800), fps=60, window_title="Minicraft")
         self.window.set_color((54, 119, 224))
         print("Loading fonts and sprites...")
         self.font = pygame.Font("assets/font.ttf", 30)
+        self.font2 = pygame.Font("assets/font.ttf", 15)
         self.spritesheet = Spritesheet("assets/spritesheet.png", 16, 256)
+        self.spritesheet_ui = Spritesheet("assets/spritesheet_ui.png", 16, 256)
         print("Initialising objects...")
-        self.environment = Environment(self.window, self.spritesheet)
+        self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2)
         print("Done!")
         
         self.running = True
@@ -37,6 +39,10 @@ class Main:
                 if e.type == pygame.KEYDOWN:
                     if e.key == pygame.K_END:
                         self.quit()
+                if e.type == pygame.MOUSEWHEEL:
+                    self.environment.player.inventory.change_item(e.y)
+                if e.type == pygame.MOUSEBUTTONDOWN:
+                    self.environment.player.attack()
             self.draw()
         
 

@@ -1,12 +1,13 @@
 import math
 import pygame
 from animation import Animation
+from inventory import Inventory
 from rect import Rect
 from window import Window
 from spritesheet import *
 
 class Player:
-    def __init__(self, window: Window, spritesheet: Spritesheet):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font):
         self.window = window
         self.speed = 0.5
         self.direction = "stand"
@@ -16,6 +17,11 @@ class Player:
         self.default_texture = self.player.texture
         self.update_colliders()
         self.collided = [False, False, False, False]
+
+        self.selected_block = 0
+        self.blocks_to_remove = []
+
+        self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
 
         self.animation_down = Animation(window, spritesheet, 2, PLAYER_2)
         self.animation_down.start()
@@ -33,15 +39,22 @@ class Player:
         collider_down = Rect((self.player.pos[0] + 15, self.player.pos[1] + self.player.size[1]), (self.player.size[0] - 30, 5), (255, 0, 0), "COLLIDER_DOWN", self.window.get())
         collider_left = Rect((self.player.pos[0] + 10, self.player.pos[1] + 10), (5, self.player.size[1] - 10), (255, 0, 0), "COLLIDER_RIGHT", self.window.get())
         collider_right = Rect((self.player.pos[0] + self.player.size[0] - 15, self.player.pos[1] + 10), (5, self.player.size[1] - 10), (255, 0, 0), "COLLIDER_RIGHT", self.window.get())
+        collider_middle = Rect((self.player.pos[0] + 15, self.player.pos[1] + self.player.size[1] / 2), (self.player.size[0] - 30, 5), (255, 0, 0), "COLLIDER_MIDDLE", self.window.get())
 
         self.colliders[0] = collider_up
         self.colliders[1] = collider_down
         self.colliders[2] = collider_left
         self.colliders[3] = collider_right
+        self.collider_middle = collider_middle
 
     def draw(self):
+        if self.in_water:
+            tex = self.player.texture
+            tex = tex.subsurface([0, 0, tex.get_size()[0], tex.get_size()[1] / 2])
+            self.player.set_texture(tex, False)
         self.player.draw()
-        self.draw_colliders()
+        #self.draw_colliders()
+        self.inventory.draw()
 
     def draw_colliders(self):
         for collider in self.colliders:
@@ -93,3 +106,18 @@ class Player:
             elif self.direction == "up":
                 frame = self.animation_up.get
             self.player.set_texture(frame)
+
+    def set_in_water(self, bool=True):
+        self.in_water = bool
+
+    
+    def attack(self):
+        current_tool = self.inventory.item
+
+        if self.selected_block != 0:
+            if current_tool[0] == AXE:
+                if self.selected_block.type == "TREE_1":
+                    self.blocks_to_remove.append(self.selected_block)
+            elif current_tool[0] == PICAXE:
+                if self.selected_block.type == "ROCK_1":
+                    self.blocks_to_remove.append(self.selected_block)

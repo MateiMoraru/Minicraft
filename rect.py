@@ -50,8 +50,11 @@ class Rect:
         self.type = type
 
     
-    def set_texture(self, tex:pygame.Surface):
-        self.texture = pygame.transform.scale(tex, self.size)
+    def set_texture(self, tex:pygame.Surface, scale=True):
+        if scale:
+            self.texture = pygame.transform.scale(tex, self.size)
+        else:
+            self.texture = tex
 
     
     def set_size(self, size:Tuple[float]):
