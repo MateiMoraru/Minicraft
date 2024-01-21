@@ -65,9 +65,12 @@ class Player:
                 collider.draw()
 
     def check_collision(self, block: Rect):
+        collided = False
         for collider in self.colliders:
             if block.collide_rect(collider.rect, offset=self.offset):
                 self.collided[self.colliders.index(collider)] = True
+                collided = True
+        return collided
 
     def loop(self, delta_time):
         self.update_colliders()
@@ -118,14 +121,11 @@ class Player:
         current_tool = self.inventory.item
 
         if self.selected_block != 0:
-            if current_tool[0] == AXE:
-                if self.selected_block.type == "TREE_1" or self.selected_block.texture_id == TREE_1:
-                    self.blocks_to_remove.append(self.selected_block)
-                elif self.selected_block.texture_id == CRAFTING_TABLE:
-                    self.blocks_to_remove.append(self.selected_block)
-            elif current_tool[0] == PICAXE:
-                if self.selected_block.type == "ROCK_1" or self.selected_block.texture_id == ROCK_1:
-                    self.blocks_to_remove.append(self.selected_block)
+            type = ID_STR(self.selected_block.texture_id)
+            for tool in BLOCK_BREAKING:
+                if ID_STR(current_tool[0]) == tool:
+                    if type in BLOCK_BREAKING[tool]:
+                        self.blocks_to_remove.append(self.selected_block)
 
     def place(self):
         if self.inventory.item[0] in BLOCK_PLACABLE and self.selected_block.texture_id in BACKGROUND_BLOCKS:

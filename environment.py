@@ -93,11 +93,19 @@ class Environment:
         for block in self.map:
             if self.in_boundaries(block, offset):
                 block.draw(offset=offset)
+                
                 if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
-                    self.player.check_collision(block)
+                    collided = self.player.check_collision(block)
+                if block.texture_id == DOOR_CLOSED:
+                    if block.collide_rect(self.player.player.rect, offset=offset):
+                        block.set_texture(self.spritesheet.image(DOOR_OPENED))
+                        block.texture_id = DOOR_OPENED
+                if block.texture_id == DOOR_OPENED:
+                    if not block.collide_rect(self.player.player.rect, offset=offset):
+                        block.set_texture(self.spritesheet.image(DOOR_CLOSED))
+                        block.texture_id = DOOR_CLOSED
 
                 mouse_pos = pygame.mouse.get_pos()
-                #mouse_pos = [mouse_pos[0] - offset[0], mouse_pos[1] - offset[1]]
                 if dist_point(self.player.player.center, mouse_pos) <= 3 * self.sprite_size and block.collide_point(mouse_pos, offset=offset):
                     self.selected_block = block
                     self.player.selected_block = block
@@ -120,7 +128,7 @@ class Environment:
             item.loop()
             if dist_point(self.player.player.center, (item.pos[0] + offset[0], item.pos[1] + offset[1])) < self.sprite_size:
                 self.ground_items.remove(item)
-                self.player.inventory.add_item(item.type)
+                self.player.inventory.add_item([item.type, 1])
 
         if changed_water_tex:
             self.water_animation_timer = 0
@@ -140,10 +148,15 @@ class Environment:
         for block in self.player.blocks_to_remove:
             if block in self.map:
                 if len(block.type) <= 1:
-                    result = BLOCK_DROPS[block.texture_id]
+                    results = BLOCK_DROPS[ID_STR(block.type)]
                 else:
-                    result = BLOCK_DROPS[block.type]
-                self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6, block.pos[1] + self.sprite_size / 6), result, (self.sprite_size / 1.5, self.sprite_size / 1.5)))
+                    results = BLOCK_DROPS[block.type]
+                for result in results:
+                    amount = 1
+                    if len(result) == 2:
+                        amount = random.randint(result[1], result[2])
+                    for item in range(0, amount):
+                        self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6 + random.randint(-50, 50), block.pos[1] + self.sprite_size / 6 + random.randint(-50, 50)), result[0], (self.sprite_size / 1.5, self.sprite_size / 1.5)))
                 self.map.remove(block)
         for block in self.player.blocks_to_add:
             self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))

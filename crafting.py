@@ -45,7 +45,6 @@ class Crafting:
                             req_pass = False
                     if req_pass:
                         item = CRAFTING_RECIPES[recipe][-1]
-                        #print(item)
                         for req in req_items:
                             inventory.remove(req)
                         inventory.add_item(item)
@@ -58,5 +57,9 @@ class Crafting:
 CRAFTING_RECIPES = {
     "STICK": [(LOG, 2), (STICK, 4)],
     "PLANK": [(LOG, 4), (PLANK, 4)],
-    "STONE_AXE": [(STICK, 2), (STONE, 3), (STONE_AXE, 1)]
+    "STONE AXE": [(STICK, 2), (STONE, 3), (STONE_AXE, 1)],
+    "STONE PICKAXE": [(STICK, 2), (STONE, 3), (STONE_PICKAXE, 1)],
+    "PLANKS BLOCK": [(PLANK, 4), (PLANK_BLOCK, 1)],
+    "PLANKS FLOOR": [(PLANK, 4), (PLANK_FLOOR, 1)],
+    "DOOR": [(PLANK, 6), (DOOR_CLOSED, 1)]
 }
