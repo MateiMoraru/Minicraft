@@ -16,7 +16,7 @@ class Inventory:
         self.hotbar_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_dark_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM_DARK, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_length = 5
-        self.hotbar = [[AXE, 1], [PICAXE, 1], [-1, -1], [-1, -1], [-1, -1]]
+        self.hotbar = [[AXE, 1], [PICAXE, 1], [CRAFTING_TABLE, 1], [PLANK, 1], [STICK, 4]]
         self.selected_hotbar_slot = 0
         self.selected_hotbar_inventory_slot = 0
 
@@ -41,9 +41,14 @@ class Inventory:
             else:
                 self.window.get().blit(self.hotbar_texture, pos)
             if i < len(self.hotbar) and self.hotbar[i][0] != -1:
-                self.window.get().blit(self.spritesheet.image(self.hotbar[i][0], size=(self.hotbar_item_size / 1.3, self.hotbar_item_size / 1.3)), (pos[0] + 5, pos[1]))
+                self.window.get().blit(self.spritesheet.image(self.hotbar[i][0], size=(self.hotbar_item_size / 1.3, self.hotbar_item_size / 1.3)), (pos[0] + 7, pos[1] + 4))
                 Text(self.font, str(self.hotbar[i][1]), (0, 0, 0), (pos[0] + self.hotbar_item_size / 2 - self.font.size(str(self.hotbar[i][1]))[0] / 2, pos[1] + self.hotbar_item_size - 15)).draw(self.window.get())
             pos[0] += self.hotbar_item_size
+
+        #if self.hotbar[self.selected_hotbar_slot][0] != -1:
+        #    self.window.get().blit(pygame.transform.scale(self.hotbar_texture, (100, 100)), (0, 64))
+        #    self.window.get().blit(self.spritesheet.image(self.hotbar[self.selected_hotbar_slot][0], size=(self.hotbar_item_size / 1.3, self.hotbar_item_size / 1.3)), (7, 68))
+        #    Text(self.font, str(self.hotbar[i][1]), (0, 0, 0), (0 + self.hotbar_item_size / 2 - self.font.size(str(self.hotbar[i][1]))[0] / 2, 68 + self.hotbar_item_size - 15)).draw(self.window.get())
 
     
     def draw_inventory(self):
@@ -70,7 +75,7 @@ class Inventory:
                 else:
                     self.window.get().blit(self.inventory_texture, pos)
                 if idx < len(self.inventory) and self.inventory[idx][0] != -1:
-                    self.window.get().blit(self.spritesheet.image(self.inventory[idx][0], size=(self.inventory_item_size / 1.3, self.inventory_item_size / 1.3)), (pos[0] + 5, pos[1]))
+                    self.window.get().blit(self.spritesheet.image(self.inventory[idx][0], size=(self.inventory_item_size / 1.3, self.inventory_item_size / 1.3)), (pos[0] + 7, pos[1] + 4))
                     Text(self.font, str(self.inventory[idx][1]), (0, 0, 0), (pos[0] + self.inventory_item_size / 2 - self.font.size(str(self.inventory[idx][1]))[0] / 2, pos[1] + self.inventory_item_size - 15)).draw(self.window.get())
                 pos[0] += self.inventory_item_size
                 idx += 1
@@ -97,7 +102,7 @@ class Inventory:
             else:
                 self.window.get().blit(self.hotbar_texture, pos)
             if i < len(self.hotbar) and self.hotbar[i][0] != -1:
-                self.window.get().blit(self.spritesheet.image(self.hotbar[i][0], size=(self.hotbar_item_size / 1.3, self.hotbar_item_size / 1.3)), (pos[0] + 5, pos[1]))
+                self.window.get().blit(self.spritesheet.image(self.hotbar[i][0], size=(self.hotbar_item_size / 1.3, self.hotbar_item_size / 1.3)), (pos[0] + 7, pos[1] + 4))
                 Text(self.font, str(self.hotbar[i][1]), (0, 0, 0), (pos[0] + self.hotbar_item_size / 2 - self.font.size(str(self.hotbar[i][1]))[0] / 2, pos[1] + self.hotbar_item_size - 15)).draw(self.window.get())
             pos[0] += self.hotbar_item_size
                     
@@ -120,10 +125,51 @@ class Inventory:
         return None
     
 
-    def add_item(self, item: int, amount: int=1):
+    def add_item(self, item: Tuple[int, int]):
+        free_slot = None
         for items in self.hotbar:
-            if items[0] == item:
-                items[1] += amount
+            if items[0] == item[0]:
+                items[1] += item[1]
                 return
-        if len(self.hotbar) < self.hotbar_length:
-            self.hotbar.append([item, amount])
+            if items[0] == -1:
+                free_slot = self.hotbar.index(items)
+        if free_slot is not None:
+            self.hotbar[free_slot] = item
+            return
+
+        for items in self.inventory:
+            if items[0] == item[0]:
+                items[1] += item[1]
+                return
+            if items[0] == -1:
+                free_slot = self.inventory.index(items)
+        if free_slot is not None:
+            self.inventory[free_slot] = item
+            return
+        
+
+    def remove_current_item(self, amount: int=None):
+        if amount == None:
+            self.hotbar[self.selected_hotbar_slot] = [-1, -1]
+        else:
+            self.hotbar[self.selected_hotbar_slot][1] -= amount
+            if self.hotbar[self.selected_hotbar_slot][1] <= 0:
+                self.hotbar[self.selected_hotbar_slot] = [-1, -1]
+
+
+    def remove(self, item: Tuple[int, int]):
+        for items in self.inventory + self.hotbar:
+            if items[0] == item[0]:
+                items[1] -= item[1]
+                if items[1] <= 0:
+                    items = [-1, -1]
+
+
+    def has(self, item: Tuple[int, int]):
+        for items in self.inventory + self.hotbar:
+            if item[0] == items[0]:
+                if item[1] == -1:
+                    return True
+                elif item[1] >= items[1]:
+                    return True
+        return True

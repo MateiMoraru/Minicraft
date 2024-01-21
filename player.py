@@ -1,6 +1,7 @@
 import math
 import pygame
 from animation import Animation
+from crafting import Crafting
 from inventory import Inventory
 from rect import Rect
 from window import Window
@@ -20,8 +21,10 @@ class Player:
 
         self.selected_block = 0
         self.blocks_to_remove = []
+        self.blocks_to_add = []
 
         self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
+        self.crafting = Crafting(window, spritesheet, spritesheet_ui, font2)
 
         self.animation_down = Animation(window, spritesheet, 2, PLAYER_2)
         self.animation_down.start()
@@ -116,8 +119,17 @@ class Player:
 
         if self.selected_block != 0:
             if current_tool[0] == AXE:
-                if self.selected_block.type == "TREE_1":
+                if self.selected_block.type == "TREE_1" or self.selected_block.texture_id == TREE_1:
+                    self.blocks_to_remove.append(self.selected_block)
+                elif self.selected_block.texture_id == CRAFTING_TABLE:
                     self.blocks_to_remove.append(self.selected_block)
             elif current_tool[0] == PICAXE:
-                if self.selected_block.type == "ROCK_1":
+                if self.selected_block.type == "ROCK_1" or self.selected_block.texture_id == ROCK_1:
                     self.blocks_to_remove.append(self.selected_block)
+
+    def place(self):
+        if self.inventory.item[0] in BLOCK_PLACABLE and self.selected_block.texture_id in BACKGROUND_BLOCKS:
+            self.blocks_to_add.append(self.inventory.item)
+            self.inventory.remove_current_item(1)
+        elif self.selected_block.texture_id == CRAFTING_TABLE:
+            return "CRAFT"

@@ -3,13 +3,14 @@ from typing import *
 import pygame
 
 class Rect:
-    def __init__(self, pos:Tuple[float], size:Tuple[float], color:Tuple[int], type:str, window:pygame.Surface, texture:pygame.Surface=None, collidable:bool=False):
+    def __init__(self, pos:Tuple[float], size:Tuple[float], color:Tuple[int], type:str, window:pygame.Surface, texture:pygame.Surface=None, collidable:bool=False, texture_id:int=None):
         self.pos = pos
         self.size = size
         self.type = type
         self.color = color
         self.window = window
         self.texture = texture
+        self.texture_id = texture_id
         if texture is not None:
             self.texture = pygame.transform.scale(self.texture, self.size)
         self.rect = pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])

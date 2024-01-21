@@ -50,37 +50,37 @@ class Environment:
                         water = [pos[0], pos[1], random.randint(2, 5)]
                     if (patch_of_sand is None or dist_point(pos, (patch_of_sand[0], patch_of_sand[1])) > patch_of_sand[2] * self.sprite_size) and (water is None or dist_point(pos, (water[0], water[1])) > water[2] * self.sprite_size):
                         if block_id is not None:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), block_type, self.window.get(), self.spritesheet.image(block_id))
+                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), block_type, self.window.get(), self.spritesheet.image(block_id), texture_id=block_id)
                             self.map.append(rect)
 
                             if block_type == "GRASS_BLOCK" and random.random() > 0.95:
-                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "TREE_1", self.window.get(), self.spritesheet.image(TREE_1), collidable=True)
+                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "TREE_1", self.window.get(), self.spritesheet.image(TREE_1), collidable=True, texture_id=TREE_1)
                                 self.map.append(rect)
                             elif random.random() > 0.96:
-                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_1", self.window.get(), self.spritesheet.image(ROCK_1), collidable=True)
+                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_1", self.window.get(), self.spritesheet.image(ROCK_1), collidable=True, texture_id=ROCK_1)
                                 self.map.append(rect)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1))
+                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
                             self.map.append(rect)
                         else:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1))
+                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
                             self.map.append(rect)
                         if random.random() > 0.99:
                             patch_of_sand = None
                     else:
                         if dist_point(pos, (patch_of_sand[0], patch_of_sand[1])) < patch_of_sand[2] * self.sprite_size:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "SAND_BLOCK", self.window.get(), self.spritesheet.image(SAND_BLOCK))
+                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "SAND_BLOCK", self.window.get(), self.spritesheet.image(SAND_BLOCK), texture_id=SAND_BLOCK)
                             self.map.append(rect)
                         else:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1))
+                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
                             self.map.append(rect)
                         if random.random() > 0.98:
                             patch_of_sand = None
                 else:
                     block_type = "WATER_BLOCK_1"
                     block_id = WATER_BLOCK_1
-                    rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), block_type, self.window.get(), self.spritesheet.image(block_id))
+                    rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), block_type, self.window.get(), self.spritesheet.image(block_id), texture_id=block_id)
                     self.map.append(rect)
 
     def draw(self):
@@ -93,7 +93,7 @@ class Environment:
         for block in self.map:
             if self.in_boundaries(block, offset):
                 block.draw(offset=offset)
-                if block.collidable:
+                if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
                     self.player.check_collision(block)
 
                 mouse_pos = pygame.mouse.get_pos()
@@ -139,10 +139,12 @@ class Environment:
 
         for block in self.player.blocks_to_remove:
             if block in self.map:
-                result = BLOCK_DROPS[block.type]
+                if len(block.type) <= 1:
+                    result = BLOCK_DROPS[block.texture_id]
+                else:
+                    result = BLOCK_DROPS[block.type]
                 self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6, block.pos[1] + self.sprite_size / 6), result, (self.sprite_size / 1.5, self.sprite_size / 1.5)))
-                #if block.type == "TREE_1":
-                #    self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6, block.pos[1] + self.sprite_size / 6), LOG, (self.sprite_size / 1.5, self.sprite_size / 1.5)))
-                #if block.type == "TREE_1":
-                #    self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6, block.pos[1] + self.sprite_size / 6), LOG, (self.sprite_size / 1.5, self.sprite_size / 1.5)))
                 self.map.remove(block)
+        for block in self.player.blocks_to_add:
+            self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))
+            self.player.blocks_to_add.remove(block)

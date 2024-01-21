@@ -35,11 +35,12 @@ class Main:
 
 
     def run(self):
-        try:
-            self.loop()
-        except Exception as e:
-            print(f"Encountered error: {e}")
-            self.quit(-1)
+        #try:
+        self.loop()
+        self.quit(0)
+        #except Exception as e:
+        #    print(f"Encountered error: {e}")
+        #    self.quit(-1)
 
 
     def loop(self):
@@ -59,13 +60,21 @@ class Main:
                     if e.key == pygame.K_e:
                         if self.state == INVENTORY:
                             self.state = INGAME
+                        elif self.state == CRAFTING:
+                            self.state = INGAME
                         elif self.state == INGAME:
                             self.state = INVENTORY
                 if self.state == INGAME:
                     if e.type == pygame.MOUSEWHEEL:
                         self.environment.player.inventory.change_item(e.y)
                     if e.type == pygame.MOUSEBUTTONDOWN:
-                        self.environment.player.attack()
+                        mouse = pygame.mouse.get_pressed()
+                        if mouse[0]:
+                            self.environment.player.attack()
+                        if mouse[2]:
+                            r = self.environment.player.place()
+                            if r == "CRAFT":
+                                self.state = CRAFTING
             self.draw()
         
 
@@ -77,6 +86,9 @@ class Main:
         if self.state == MAINMENU:
             self.main_menu.draw()
         if self.state == INVENTORY:
+            self.environment.player.inventory.draw_inventory()
+        if self.state == CRAFTING:
+            self.environment.player.crafting.draw(self.environment.player.inventory)
             self.environment.player.inventory.draw_inventory()
         Text(self.font, f"FPS: {self.window.get_fps()}", (0, 0, 0), (0, 0)).draw(self.window.get())
         self.window.draw_end()
