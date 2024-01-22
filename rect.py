@@ -11,6 +11,7 @@ class Rect:
         self.window = window
         self.texture = texture
         self.texture_id = texture_id
+        self.velocity = [0, 0]
         if texture is not None:
             self.texture = pygame.transform.scale(self.texture, self.size)
         self.rect = pygame.Rect(self.pos[0], self.pos[1], self.size[0], self.size[1])
@@ -18,7 +19,7 @@ class Rect:
         self.light = 0
         self.collidable = collidable
 
-    def draw(self, offset:tuple=(0, 0)):
+    def draw(self, offset: Tuple[int, int]=(0, 0)):
         self.center = (self.pos[0] + self.size[0] / 2, self.pos[1] + self.size[1] / 2)
         pos = [self.pos[0] + offset[0], self.pos[1] + offset[1]]
 
@@ -31,6 +32,8 @@ class Rect:
             rect(self.window, pos, self.size, (255, 255, 255, self.light))
         elif self.light < 0:
             rect(self.window, pos, self.size, (0, 0, 0, -self.light))
+
+        self.pos = [self.pos[0] + self.velocity[0], self.pos[1] + self.velocity[1]]
 
 
     def collide_point(self, point, offset:tuple=(0, 0)):
@@ -84,6 +87,11 @@ class Rect:
     def rm_texture(self):
         self.texture = None
         self.type = "air"
+
+
+    def add_force(self, velo: Tuple[int, int]):
+        self.velocity[0] += velo[0]
+        self.velocity[1] += velo[1]
 
 
 def rect(window: pygame.Surface, pos: tuple, size: tuple, color: tuple):

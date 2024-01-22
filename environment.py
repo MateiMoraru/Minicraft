@@ -5,6 +5,7 @@ from player import Player
 from spritesheet import *
 from rect import *
 from window import Window
+from particles import Particles
 
 class Environment:
     def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font):
@@ -21,6 +22,7 @@ class Environment:
         self.water_animation_timer = 0
 
         self.ground_items = []
+        self.particles = Particles(self.window, self.spritesheet, (0, 0), 5)
 
     def generate_map(self):
         size = 120
@@ -104,6 +106,8 @@ class Environment:
                     if not block.collide_rect(self.player.player.rect, offset=offset):
                         block.set_texture(self.spritesheet.image(DOOR_CLOSED))
                         block.texture_id = DOOR_CLOSED
+                if block.collide_rect(self.player.colliders[1].rect, offset=offset):
+                    self.player_floor_block = block
 
                 mouse_pos = pygame.mouse.get_pos()
                 if dist_point(self.player.player.center, mouse_pos) <= 3 * self.sprite_size and block.collide_point(mouse_pos, offset=offset):
@@ -133,6 +137,7 @@ class Environment:
         if changed_water_tex:
             self.water_animation_timer = 0
 
+        self.particles.draw()
         self.player.draw()
 
     
@@ -143,7 +148,8 @@ class Environment:
     def loop(self):
         dt = self.window.delta_time
 
-        self.player.loop(dt)
+        self.particles.loop(0.8)
+        self.player.loop(dt, self.player_floor_block)
 
         for block in self.player.blocks_to_remove:
             if block in self.map:
@@ -157,7 +163,10 @@ class Environment:
                         amount = random.randint(result[1], result[2])
                     for item in range(0, amount):
                         self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6 + random.randint(-50, 50), block.pos[1] + self.sprite_size / 6 + random.randint(-50, 50)), result[0], (self.sprite_size / 1.5, self.sprite_size / 1.5)))
+                self.particles.add_particles((block.center[0] + block.size[0] / 2+ self.player.offset[0], block.center[1] + self.player.offset[1]), block.texture_id)
                 self.map.remove(block)
+                self.player.blocks_to_remove.remove(block)
         for block in self.player.blocks_to_add:
             self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))
+            self.particles.add_particles((block.center[0] + block.size[0] / 2+ self.player.offset[0], block.center[1] + self.player.offset[1]), block.texture_id)
             self.player.blocks_to_add.remove(block)

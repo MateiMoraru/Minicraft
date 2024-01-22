@@ -3,6 +3,7 @@ import pygame
 from animation import Animation
 from crafting import Crafting
 from inventory import Inventory
+from particles import Particles
 from rect import Rect
 from window import Window
 from spritesheet import *
@@ -10,6 +11,7 @@ from spritesheet import *
 class Player:
     def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font):
         self.window = window
+        self.spritesheet = spritesheet
         self.speed = 0.5
         self.direction = "stand"
         self.offset = [0, 0]
@@ -25,6 +27,8 @@ class Player:
 
         self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
         self.crafting = Crafting(window, spritesheet, spritesheet_ui, font2)
+
+        self.particles = Particles(self.window, self.spritesheet, self.player.pos, 5, acceletaion=0.01, multiplier=0.1)
 
         self.animation_down = Animation(window, spritesheet, 2, PLAYER_2)
         self.animation_down.start()
@@ -50,6 +54,7 @@ class Player:
         self.colliders[3] = collider_right
         self.collider_middle = collider_middle
 
+
     def draw(self):
         if self.in_water:
             tex = self.player.texture
@@ -58,11 +63,15 @@ class Player:
         self.player.draw()
         #self.draw_colliders()
         self.inventory.draw()
+        if not self.in_water:
+            self.particles.draw()
+
 
     def draw_colliders(self):
         for collider in self.colliders:
             if self.collided[self.colliders.index(collider)]:
                 collider.draw()
+
 
     def check_collision(self, block: Rect):
         collided = False
@@ -72,8 +81,10 @@ class Player:
                 collided = True
         return collided
 
-    def loop(self, delta_time):
+
+    def loop(self, delta_time: float, floor_block: Rect):
         self.update_colliders()
+        self.particles.loop(0.75)
 
         keys = pygame.key.get_pressed()
         move = [0, 0]
@@ -97,6 +108,9 @@ class Player:
 
         if move[0] == 0 and move[1] == 0:
             self.direction = "stand"
+        else:
+            #self.particles.set_pos(self.player.pos)
+            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2, self.player.pos[1] + self.player.size[1]], floor_block.texture_id)
 
         self.collided = [False, False, False, False]
 
@@ -112,6 +126,7 @@ class Player:
             elif self.direction == "up":
                 frame = self.animation_up.get
             self.player.set_texture(frame)
+
 
     def set_in_water(self, bool=True):
         self.in_water = bool

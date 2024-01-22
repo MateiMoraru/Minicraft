@@ -28,7 +28,7 @@ class Inventory:
         self.selected_inventory_slot = 0
         for i in range(self.inventory_length * self.inventory_length):
             self.inventory.append([-1, -1])
-        self.inventory[0] = [LOG, 64]
+        self.inventory[0] = [PLANK_FLOOR, 64]
         self.inventory[1] = [PLANK, 64]
         self.hovering_item = None
         self.select_hover_time = time.time()
