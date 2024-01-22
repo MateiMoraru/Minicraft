@@ -15,6 +15,7 @@ class Particles:
         self.multiplier = multiplier
         self.particles_amount = 10 * multiplier
         self.particles = []
+        self.gravity = True
 
     
     def add_particles(self, pos: Tuple[int, int]=None, texture: int=None, color: Tuple[int, int, int]=(0, 0, 0)):
@@ -25,6 +26,7 @@ class Particles:
         for i in range(particles_amount):
             particle = self.new_particle((pos[0] + random.uniform(-5, 5) * self.size, pos[1] + random.uniform(-5, 5) * self.size), texture, color)
             self.particles.append(particle)
+
 
     def new_particle(self, pos: Tuple[int, int], texture: int=None, color: Tuple[int, int, int]=(0, 0, 0)):
         tex = self.spritesheet.image(texture, size=(self.size * 5, self.size * 5))
@@ -40,13 +42,14 @@ class Particles:
 
     def draw(self, offset: Tuple[int, int]=(0, 0)):
         for particle in self.particles:
-            particle.draw()
-            rect(self.window.get(), particle.pos, particle.size, particle.color)
+            particle.draw(offset)
+            rect(self.window.get(), (particle.pos[0] + offset[0], particle.pos[1] + offset[1]), particle.size, particle.color)
 
     
     def loop(self, die_chance: float=0.95):
         for particle in self.particles:
-            particle.add_force([0, self.acceletaion])
+            if not self.gravity:
+                particle.add_force([0, self.acceletaion])
 
             if random.random() > die_chance:
                 self.particles.remove(particle)
@@ -54,3 +57,7 @@ class Particles:
     
     def set_pos(self, pos: Tuple[int, int]):
         self.pos = pos
+
+
+    def no_gravity(self):
+        self.gravity = False

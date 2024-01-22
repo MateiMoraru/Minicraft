@@ -60,11 +60,12 @@ class Player:
             tex = self.player.texture
             tex = tex.subsurface([0, 0, tex.get_size()[0], tex.get_size()[1] / 2])
             self.player.set_texture(tex, False)
+        
+        if not self.in_water:
+            self.particles.draw()
         self.player.draw()
         #self.draw_colliders()
         self.inventory.draw()
-        if not self.in_water:
-            self.particles.draw()
 
 
     def draw_colliders(self):
@@ -110,7 +111,7 @@ class Player:
             self.direction = "stand"
         else:
             #self.particles.set_pos(self.player.pos)
-            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2, self.player.pos[1] + self.player.size[1]], floor_block.texture_id)
+            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2 + move[0], self.player.pos[1] + self.player.size[1] + move[1]], floor_block.texture_id)
 
         self.collided = [False, False, False, False]
 

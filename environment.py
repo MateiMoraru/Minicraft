@@ -1,5 +1,6 @@
 import random
 import pygame
+from campfire import Campfire
 from item import Item
 from player import Player
 from spritesheet import *
@@ -22,6 +23,7 @@ class Environment:
         self.water_animation_timer = 0
 
         self.ground_items = []
+        self.special_blocks = []
         self.particles = Particles(self.window, self.spritesheet, (0, 0), 5)
 
     def generate_map(self):
@@ -127,6 +129,9 @@ class Environment:
                     changed_water_tex = True
                     block.set_texture(self.spritesheet.image(WATER_BLOCK_1))
         
+        for block in self.special_blocks:
+            block.draw(offset)
+
         for item in self.ground_items:
             item.draw(offset)
             item.loop()
@@ -167,6 +172,9 @@ class Environment:
                 self.map.remove(block)
                 self.player.blocks_to_remove.remove(block)
         for block in self.player.blocks_to_add:
-            self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))
-            self.particles.add_particles((block.center[0] + block.size[0] / 2+ self.player.offset[0], block.center[1] + self.player.offset[1]), block.texture_id)
+            if not block[0] == CAMPFIRE_1:
+                self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))
+            else:
+                self.special_blocks.append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
+            self.particles.add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
             self.player.blocks_to_add.remove(block)
