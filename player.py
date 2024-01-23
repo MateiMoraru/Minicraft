@@ -1,4 +1,5 @@
 import math
+import random
 import pygame
 from animation import Animation
 from crafting import Crafting
@@ -7,11 +8,13 @@ from particles import Particles
 from rect import Rect
 from window import Window
 from spritesheet import *
+from sfx_manager import *
 
 class Player:
-    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
         self.window = window
         self.spritesheet = spritesheet
+        self.sfx = sfx
         self.speed = 0.5
         self.direction = "stand"
         self.offset = [0, 0]
@@ -26,6 +29,7 @@ class Player:
         self.blocks_to_add = []
 
         self.health = 10
+        self.heart_texture = spritesheet_ui.image(UI_HEART, size=(32, 32))
 
         self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
         self.crafting = Crafting(window, spritesheet, spritesheet_ui, font2)
@@ -38,7 +42,7 @@ class Player:
         self.animation_left.start()
         self.animation_right = Animation(window, spritesheet, 3, PLAYER_RIGHT_1)
         self.animation_right.start()
-        self.animation_up = Animation(window, spritesheet, 2, PLAYER_UP_1 + 1)
+        self.animation_up = Animation(window, spritesheet, 2, PLAYER_UP_2)
         self.animation_up.start()
 
 
@@ -66,8 +70,15 @@ class Player:
         if not self.in_water:
             self.particles.draw()
         self.player.draw()
-        #self.draw_colliders()
         self.inventory.draw()
+        self.draw_health()
+
+    
+    def draw_health(self):
+        pos = [self.window.size[0] - 32, 0]
+        for i in range(0, self.health, 2):
+            self.window.get().blit(self.heart_texture, pos)
+            pos[0] -= 32
 
 
     def draw_colliders(self):
@@ -114,9 +125,11 @@ class Player:
 
         if move[0] == 0 and move[1] == 0:
             self.direction = "stand"
+            self.sfx.stop(WALK)
         else:
-            #self.particles.set_pos(self.player.pos)
-            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2 + move[0], self.player.pos[1] + self.player.size[1] + move[1]], floor_block.texture_id)
+            if random.random() > 0.95:
+                self.sfx.play(WALK)
+            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2 + move[0], self.player.pos[1] + self.player.size[1] + move[1]], floor_block.texture_id, multiplier=0.1)
 
         self.collided = [False, False, False, False]
 
@@ -138,6 +151,10 @@ class Player:
         self.in_water = bool
 
     
+    def harm(self, damage: int, source: str=None):
+        self.health -= damage
+        self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2, self.player.pos[1] + self.player.size[1] / 2], BLOOD, multiplier=2)
+
     def attack(self):
         current_tool = self.inventory.item
 

@@ -13,15 +13,17 @@ class Particles:
         self.size = size
         self.acceletaion = acceletaion
         self.multiplier = multiplier
-        self.particles_amount = 10 * multiplier
+        self.particles_amount = 10
         self.particles = []
         self.gravity = True
 
     
-    def add_particles(self, pos: Tuple[int, int]=None, texture: int=None, color: Tuple[int, int, int]=(0, 0, 0)):
+    def add_particles(self, pos: Tuple[int, int]=None, texture: int=None, color: Tuple[int, int, int]=(0, 0, 0), multiplier: int=None):
+        if multiplier is None:
+            multiplier = self.multiplier
         if pos is None:
             pos = self.pos
-        particles_amount = int(self.particles_amount)
+        particles_amount = int(self.particles_amount * self.multiplier)
 
         for i in range(particles_amount):
             particle = self.new_particle((pos[0] + random.uniform(-5, 5) * self.size, pos[1] + random.uniform(-5, 5) * self.size), texture, color)

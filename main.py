@@ -4,6 +4,8 @@ from spritesheet import Spritesheet
 from window import Window
 from environment import Environment
 from text import Text
+from sfx_manager import SFX
+
 # GAME STATES
 MAINMENU = 0
 INGAME = 1
@@ -21,9 +23,10 @@ class Main:
         self.font = pygame.Font("assets/font.ttf", 30)
         self.font2 = pygame.Font("assets/font.ttf", 15)
         self.spritesheet = Spritesheet("assets/spritesheet.png", 16, 256)
-        self.spritesheet_ui = Spritesheet("assets/spritesheet_ui.png", 16, 256)
+        self.spritesheet_ui = Spritesheet("assets/spritesheet_ui.png", 16, 64)
+        self.sfx = SFX()
         print("Initialising objects...")
-        self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2)
+        self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)
         print("Done!")
         
         self.running = True

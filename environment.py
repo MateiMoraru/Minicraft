@@ -7,9 +7,10 @@ from spritesheet import *
 from rect import *
 from window import Window
 from particles import Particles
+from sfx_manager import *
 
 class Environment:
-    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
         self.window = window
         self.spritesheet = spritesheet 
         self.spritesheet_ui = spritesheet_ui
@@ -18,9 +19,10 @@ class Environment:
         self.sprite_size = 64
         self.map = []
         self.generate_map()
-        self.player = Player(window, spritesheet, spritesheet_ui, font, font2)
+        self.player = Player(window, spritesheet, spritesheet_ui, font, font2, sfx)
         self.selected_block = 0
         self.water_animation_timer = 0
+        self.sfx = sfx
 
         self.ground_items = []
         self.special_blocks = []
@@ -113,6 +115,7 @@ class Environment:
                         block.texture_id = DOOR_CLOSED
                 if block.collide_rect(self.player.colliders[1].rect, offset=offset):
                     self.player_floor_block = block
+                
 
                 mouse_pos = pygame.mouse.get_pos()
                 if dist_point(self.player.player.center, mouse_pos) <= 3 * self.sprite_size and block.collide_point(mouse_pos, offset=offset):
@@ -134,6 +137,11 @@ class Environment:
         
         for block in self.special_blocks:
             block.draw(offset)
+            if isinstance(block, Campfire):
+                if block.campfire.collide_rect(self.player.player.rect, offset=offset):
+                    if random.random() > 0.99:
+                        self.player.harm(1)
+                        self.sfx.play(DAMAGE)
 
         for item in self.ground_items:
             item.draw(offset)
@@ -141,6 +149,7 @@ class Environment:
             if dist_point(self.player.player.center, (item.pos[0] + offset[0], item.pos[1] + offset[1])) < self.sprite_size:
                 self.ground_items.remove(item)
                 self.player.inventory.add_item([item.type, 1])
+                self.sfx.play(ITEM_PICKUP)
 
         if changed_water_tex:
             self.water_animation_timer = 0
@@ -172,6 +181,7 @@ class Environment:
                     for item in range(0, amount):
                         self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6 + random.randint(-50, 50), block.pos[1] + self.sprite_size / 6 + random.randint(-50, 50)), result[0], (self.sprite_size / 1.5, self.sprite_size / 1.5)))
                 self.particles.add_particles((block.center[0] + block.size[0] / 2+ self.player.offset[0], block.center[1] + self.player.offset[1]), block.texture_id)
+                self.sfx.play(HIT_BLOCK)
                 self.map.remove(block)
                 self.player.blocks_to_remove.remove(block)
         for block in self.player.blocks_to_add:
@@ -180,4 +190,5 @@ class Environment:
             else:
                 self.special_blocks.append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
             self.particles.add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
+            self.sfx.play(PLACE_BLOCK)
             self.player.blocks_to_add.remove(block)

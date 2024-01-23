@@ -16,7 +16,7 @@ class Inventory:
         self.hotbar_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_dark_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM_DARK, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_length = 5
-        self.hotbar = [[AXE, 1], [PICAXE, 1], [CRAFTING_TABLE, 1], [CAMPFIRE_1, 61], [COAL, 21]]
+        self.hotbar = [[AXE, 1], [PICAXE, 1], [CRAFTING_TABLE, 1], [CAMPFIRE_1, 1], [PLANK_BLOCK, 32]]
         self.selected_hotbar_slot = 0
         self.selected_hotbar_inventory_slot = 0
 
