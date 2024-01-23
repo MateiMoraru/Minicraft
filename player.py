@@ -25,6 +25,8 @@ class Player:
         self.blocks_to_remove = []
         self.blocks_to_add = []
 
+        self.health = 10
+
         self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
         self.crafting = Crafting(window, spritesheet, spritesheet_ui, font2)
 
@@ -32,11 +34,11 @@ class Player:
 
         self.animation_down = Animation(window, spritesheet, 2, PLAYER_2)
         self.animation_down.start()
-        self.animation_left = Animation(window, spritesheet, 3, PLAYER_LEFT_1 - 1)
+        self.animation_left = Animation(window, spritesheet, 3, PLAYER_LEFT_1)
         self.animation_left.start()
-        self.animation_right = Animation(window, spritesheet, 3, PLAYER_RIGHT_1 - 1)
+        self.animation_right = Animation(window, spritesheet, 3, PLAYER_RIGHT_1)
         self.animation_right.start()
-        self.animation_up = Animation(window, spritesheet, 2, PLAYER_UP_1)
+        self.animation_up = Animation(window, spritesheet, 2, PLAYER_UP_1 + 1)
         self.animation_up.start()
 
 
@@ -104,6 +106,9 @@ class Player:
         if move[0] != 0 and move[1] != 0:
             move[0] /= math.sqrt(2)
             move[1] /= math.sqrt(2)
+        if self.in_water:
+            move[0] /= 2
+            move[1] /= 2
         self.offset[0] += move[0]
         self.offset[1] += move[1]
 

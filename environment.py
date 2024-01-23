@@ -63,6 +63,9 @@ class Environment:
                             elif random.random() > 0.96:
                                 rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_1", self.window.get(), self.spritesheet.image(ROCK_1), collidable=True, texture_id=ROCK_1)
                                 self.map.append(rect)
+                            elif random.random() > 0.995:
+                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_IRON", self.window.get(), self.spritesheet.image(ROCK_IRON), collidable=True, texture_id=ROCK_IRON)
+                                self.map.append(rect)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
                             rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
@@ -164,7 +167,7 @@ class Environment:
                     results = BLOCK_DROPS[block.type]
                 for result in results:
                     amount = 1
-                    if len(result) == 2:
+                    if len(result) == 3:
                         amount = random.randint(result[1], result[2])
                     for item in range(0, amount):
                         self.ground_items.append(Item(self.window, self.spritesheet, (block.pos[0] + self.sprite_size / 6 + random.randint(-50, 50), block.pos[1] + self.sprite_size / 6 + random.randint(-50, 50)), result[0], (self.sprite_size / 1.5, self.sprite_size / 1.5)))

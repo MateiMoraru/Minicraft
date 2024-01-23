@@ -16,7 +16,7 @@ class Inventory:
         self.hotbar_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_dark_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM_DARK, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_length = 5
-        self.hotbar = [[AXE, 1], [PICAXE, 1], [CRAFTING_TABLE, 1], [CAMPFIRE_1, 61], [-1, -1]]
+        self.hotbar = [[AXE, 1], [PICAXE, 1], [CRAFTING_TABLE, 1], [CAMPFIRE_1, 61], [COAL, 21]]
         self.selected_hotbar_slot = 0
         self.selected_hotbar_inventory_slot = 0
 
@@ -64,7 +64,7 @@ class Inventory:
                             self.hovering_item = self.inventory[self.selected_inventory_slot]
                             self.inventory[self.selected_inventory_slot] = [-1, -1]
                             self.select_hover_time = time.time()
-                        else:
+                        elif self.inventory[self.selected_inventory_slot][0] == -1:
                             self.inventory[self.selected_inventory_slot] = self.hovering_item
                             self.hovering_item = None
                             self.select_hover_time = time.time()
@@ -94,7 +94,7 @@ class Inventory:
                         self.hotbar[self.selected_hotbar_inventory_slot] = [-1, -1]
                         self.select_hover_time = time.time()
                         print(self.hovering_item)
-                    else:
+                    elif self.hotbar[self.selected_hotbar_inventory_slot][0] == -1:
                         self.hotbar[self.selected_hotbar_inventory_slot] = self.hovering_item
                         self.hovering_item = None
                         self.select_hover_time = time.time()

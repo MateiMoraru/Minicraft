@@ -30,7 +30,7 @@ class Crafting:
             for i in range(len(CRAFTING_RECIPES[recipe]) - 1):
                 item = CRAFTING_RECIPES[recipe][i]
             #for item in CRAFTING_RECIPES[recipe]:
-                text += f" {item[1]}x{ITEM_ID[item[0]].lower()}"
+                text += f" {item[1]}x{ID_STR(item[0]).lower()}"
                 req_items.append(item)
 
             Text(self.font, text, (0, 0, 0), (pos[0] + 30, pos[1] + 10 + 30 * idx)).draw(self.window.get())
@@ -61,5 +61,6 @@ CRAFTING_RECIPES = {
     "STONE PICKAXE": [(STICK, 2), (STONE, 3), (STONE_PICKAXE, 1)],
     "PLANKS BLOCK": [(PLANK, 4), (PLANK_BLOCK, 1)],
     "PLANKS FLOOR": [(PLANK, 4), (PLANK_FLOOR, 1)],
-    "DOOR": [(PLANK, 6), (DOOR_CLOSED, 1)]
+    "DOOR": [(PLANK, 6), (DOOR_CLOSED, 1)],
+    "CAMPFIRE": [(STICK, 4), (COAL, 2), (STONE, 3), (CAMPFIRE_1, 1)]
 }

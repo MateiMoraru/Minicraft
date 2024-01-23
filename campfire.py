@@ -24,4 +24,4 @@ class Campfire:
         self.particles.loop()
         self.campfire.set_texture(self.animation.get)
         if random.random() > 0.95:
-            self.particles.add_particles((self.campfire.center[0], self.campfire.center[1] - self.campfire.size[1] / 4), SMOKE)
+            self.particles.add_particles((self.campfire.center[0], self.campfire.center[1] - self.campfire.size[1] / 4), FIRE_TEXTURE)#random.randint(CAMPFIRE_4, SMOKE))
