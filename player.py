@@ -5,6 +5,7 @@ import pygame
 from animation import Animation
 from crafting import Crafting
 from inventory import Inventory
+from light import LightSource
 from particles import Particles
 from rect import Rect
 from window import Window
@@ -38,13 +39,16 @@ class Player:
 
         self.particles = Particles(self.window, self.spritesheet, self.player.pos, 5, acceletaion=0.01, multiplier=0.1)
 
-        self.animation_down = Animation(window, spritesheet, 2, PLAYER_2)
+        self.produce_light = False
+        self.light = LightSource(self.window, self.player.pos, 3, color=(255, 226, 110), max_intensity=200)
+
+        self.animation_down = Animation(window, spritesheet, 2, PLAYER_2, delay=0.15)
         self.animation_down.start()
-        self.animation_left = Animation(window, spritesheet, 3, PLAYER_LEFT_1)
+        self.animation_left = Animation(window, spritesheet, 3, PLAYER_LEFT_1, delay=0.15)
         self.animation_left.start()
-        self.animation_right = Animation(window, spritesheet, 3, PLAYER_RIGHT_1)
+        self.animation_right = Animation(window, spritesheet, 3, PLAYER_RIGHT_1, delay=0.15)
         self.animation_right.start()
-        self.animation_up = Animation(window, spritesheet, 2, PLAYER_UP_2)
+        self.animation_up = Animation(window, spritesheet, 2, PLAYER_UP_2, delay=0.15)
         self.animation_up.start()
 
 
@@ -101,6 +105,10 @@ class Player:
     def loop(self, delta_time: float, floor_block: Rect):
         self.update_colliders()
         self.particles.loop(0.75)
+
+        self.produce_light = self.inventory.item[0] == TORCH
+        if self.produce_light:
+            self.light.set_pos((self.player.center[0] - self.offset[0], self.player.center[1] - self.offset[1]))
 
         keys = pygame.key.get_pressed()
         move = [0, 0]
@@ -169,6 +177,11 @@ class Player:
 
         if self.selected_block != 0:
             type = ID_STR(self.selected_block.texture_id)
+            if type == "GRASS_BLOCK" and current_tool[0] == SHOVEL:
+                self.blocks_to_remove.append(self.selected_block)
+                self.blocks_to_add.append([GRASS_BLOCK_DUG, 0])
+                return
+                
             for tool in BLOCK_BREAKING:
                 if ID_STR(current_tool[0]) == tool or tool == "ANY":
                     if type in BLOCK_BREAKING[tool]:
@@ -180,3 +193,6 @@ class Player:
             self.inventory.remove_current_item(1)
         elif self.selected_block.texture_id == CRAFTING_TABLE:
             return "CRAFT"
+        elif self.inventory.item[0] == CLAY:
+            self.blocks_to_add.append(self.inventory.item)
+            self.inventory.remove_current_item(1)

@@ -1,4 +1,5 @@
 import random
+import time
 import pygame
 from window import Window
 from spritesheet import *
@@ -17,6 +18,9 @@ class Campfire:
         self.particles = Particles(self.window, self.spritesheet, pos, 5, -0.1, 0.5)
         self.particles.no_gravity()
 
+        self.cooking = []
+        self.cooked = []
+
     
     def draw(self, offset: Tuple[int, int]=(0, 0)):
         self.campfire.draw(offset=offset)
@@ -25,3 +29,11 @@ class Campfire:
         self.campfire.set_texture(self.animation.get)
         if random.random() > 0.95:
             self.particles.add_particles((self.campfire.center[0], self.campfire.center[1] - self.campfire.size[1] / 4), FIRE_TEXTURE)#random.randint(CAMPFIRE_4, SMOKE))
+
+        for item in self.cooking:
+            if time.time() - item[1] > 3:
+                self.cooked.append(item)
+                self.cooking.remove(item)
+
+    def add_to_fire(self, item: int):
+        self.cooking.append([item, time.time()])

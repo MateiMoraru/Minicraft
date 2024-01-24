@@ -123,6 +123,12 @@ class Environment:
                 for light_source in self.light_sources:
                     if light_source.in_range(block):
                         light_source.draw(block, offset)
+                if self.player.produce_light:
+                    if self.player.light.in_range(block):
+                        self.player.light.draw(block, offset)
+                if block.texture_id == GRASS_BLOCK_DUG:
+                    if random.random() > 0.999:
+                        block.set_texture(self.spritesheet.image(GRASS_BLOCK))
                 
                 if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
                     collided = self.player.check_collision(block)
@@ -165,6 +171,12 @@ class Environment:
                     if random.random() > 0.99:
                         self.player.harm(1)
                         self.sfx.play(DAMAGE)
+                if block.campfire.collide_point(pygame.mouse.get_pos(), offset=offset):
+                    self.selected_block = block
+                
+                for cooked in block.cooked:
+                    self.ground_items.append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), BRICK))
+                    block.cooked.remove(cooked)
 
         for item in self.ground_items:
             item.draw(offset)
@@ -221,11 +233,22 @@ class Environment:
                 self.map.remove(block)
                 self.player.blocks_to_remove.remove(block)
         for block in self.player.blocks_to_add:
-            if not block[0] == CAMPFIRE_1:
+            if isinstance(self.selected_block, Campfire):
+                if block[0] != CLAY:
+                    self.player.inventory.add_item((block[0], 1))
+                    self.player.blocks_to_add.remove(block)
+                    return
+                self.selected_block.add_to_fire(self.player.inventory.item[0])
+                self.player.blocks_to_add.remove(block)
+                return
+            if not block[0] in SPECIAL_BLOCKS and block[0] in BLOCK_PLACABLE:
                 self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))
-            else:
+            elif block[0] in LIGHT_BLOCKS:
                 self.light_sources.append(LightSource(self.window, self.selected_block.center, 3, color=(255, 226, 110)))
-                self.special_blocks.append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
+                if block[0] == CAMPFIRE_1:
+                    self.special_blocks.append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
+                elif block[0] == TORCH:
+                    self.special_blocks.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "TORCH", self.window.get(), self.spritesheet.image(TORCH, size=(self.sprite_size, self.sprite_size))))
             self.particles.add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
             self.sfx.play(PLACE_BLOCK)
             self.player.blocks_to_add.remove(block)
