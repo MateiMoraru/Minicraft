@@ -107,9 +107,9 @@ def collide_point(rect:List[int], point:List[int]):
     return collide_x and collide_y
 
 
-def dist_block(point:tuple, rect:Rect):
-    dx = abs(point[0] - (rect.rect.x + rect.rect.w / 2)) ** 2
-    dy = abs(point[1] - (rect.rect.y + rect.rect.h / 2)) ** 2
+def dist_block(point:tuple, rect:Rect, offset: Tuple[int, int]=(0, 0)):
+    dx = abs(point[0] - (rect.rect.x + rect.rect.w / 2 + offset[0])) ** 2
+    dy = abs(point[1] - (rect.rect.y + rect.rect.h / 2 + offset[1])) ** 2
 
     return math.sqrt(dx + dy) 
     

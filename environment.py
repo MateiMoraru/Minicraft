@@ -8,6 +8,7 @@ from rect import *
 from window import Window
 from particles import Particles
 from sfx_manager import *
+from light import LightSource
 
 class Environment:
     def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
@@ -26,7 +27,14 @@ class Environment:
 
         self.ground_items = []
         self.special_blocks = []
+        self.light_sources = []
         self.particles = Particles(self.window, self.spritesheet, (0, 0), 5)
+
+        self.time = 2000
+        self.time_direction = 1
+        self.time_acceleration = .1
+        self.light_filter = pygame.surface.Surface(self.window.size)
+        self.light_filter.fill((100, 100, 100))
 
     def generate_map(self):
         size = 120
@@ -112,6 +120,9 @@ class Environment:
         for block in self.map:
             if self.in_boundaries(block, offset):
                 block.draw(offset=offset)
+                for light_source in self.light_sources:
+                    if light_source.in_range(block):
+                        light_source.draw(block, offset)
                 
                 if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
                     collided = self.player.check_collision(block)
@@ -145,6 +156,8 @@ class Environment:
                     changed_water_tex = True
                     block.set_texture(self.spritesheet.image(WATER_BLOCK_1))
         
+        self.window.get().blit(self.light_filter, (0, 0), special_flags=pygame.BLEND_RGBA_SUB)
+        
         for block in self.special_blocks:
             block.draw(offset)
             if isinstance(block, Campfire):
@@ -172,8 +185,21 @@ class Environment:
         return block.pos[0] > -offset[0] - block.size[0] and block.pos[0] < self.window.size[0] - offset[0] + block.size[0] and block.pos[1] > -offset[1] - block.size[0] and block.pos[1] < self.window.size[1] - offset[1]
     
     
+    def update_time_of_day(self):
+        self.time += self.window.delta_time * self.time_direction * self.time_acceleration
+        
+        if self.time >= 15000:
+            self.time_direction *= -1
+        elif self.time <= 1000:
+            self.time_direction *= -1
+
+        self.light_filter.fill((self.time / 100, self.time / 100, self.time / 100))
+
+
     def loop(self):
         dt = self.window.delta_time
+
+        self.update_time_of_day()
 
         self.particles.loop(0.8)
         self.player.loop(dt, self.player_floor_block)
@@ -198,6 +224,7 @@ class Environment:
             if not block[0] == CAMPFIRE_1:
                 self.map.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "", self.window.get(), self.spritesheet.image(block[0], size=(self.sprite_size, self.sprite_size)), texture_id=block[0]))
             else:
+                self.light_sources.append(LightSource(self.window, self.selected_block.center, 3, color=(255, 226, 110)))
                 self.special_blocks.append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
             self.particles.add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
             self.sfx.play(PLACE_BLOCK)

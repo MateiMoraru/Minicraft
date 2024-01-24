@@ -17,7 +17,7 @@ class Main:
         print("Initialising pygame...")
         pygame.init()
         print("Initialising window...")
-        self.window = Window(size=(1200, 800), fps=60, window_title="Minicraft")
+        self.window = Window(size=(1200, 800), fps=0, window_title="Minicraft")
         self.window.set_color((54, 119, 224))
         print("Loading fonts and sprites...")
         self.font = pygame.Font("assets/font.ttf", 30)
@@ -36,6 +36,7 @@ class Main:
         main_menu.add_buttons(self.main_menu_start, self.font, (self.window.size[0] / 2 , self.window.size[1] / 2), (500, 50), (111, 123, 128, 255), "Start Game")
         main_menu.add_buttons(self.quit, self.font, (self.window.size[0] / 2, self.window.size[1] / 2 + 100), (500, 50), (111, 123, 128, 255), "Exit")
         self.main_menu = main_menu
+
 
 
     def run(self):

@@ -169,7 +169,6 @@ class Player:
 
         if self.selected_block != 0:
             type = ID_STR(self.selected_block.texture_id)
-            print(type)
             for tool in BLOCK_BREAKING:
                 if ID_STR(current_tool[0]) == tool or tool == "ANY":
                     if type in BLOCK_BREAKING[tool]:
