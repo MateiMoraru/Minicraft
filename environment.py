@@ -62,12 +62,22 @@ class Environment:
                             if block_type == "GRASS_BLOCK" and random.random() > 0.95:
                                 rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "TREE_1", self.window.get(), self.spritesheet.image(TREE_1), collidable=True, texture_id=TREE_1)
                                 self.map.append(rect)
-                            elif random.random() > 0.96:
+                            elif (block_type == "SAND_BLOCK" or block_type == "GRASS_BLOCK") and random.random() > 0.96:
                                 rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_1", self.window.get(), self.spritesheet.image(ROCK_1), collidable=True, texture_id=ROCK_1)
                                 self.map.append(rect)
-                            elif random.random() > 0.995:
+                            elif block_type == "GRASS_BLOCK" and random.random() > 0.995:
                                 rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_IRON", self.window.get(), self.spritesheet.image(ROCK_IRON), collidable=True, texture_id=ROCK_IRON)
                                 self.map.append(rect)
+                            elif block_type == "GRASS_BLOCK":
+                                if random.random() > 0.98:
+                                    rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "FLOWER_1", self.window.get(), self.spritesheet.image(FLOWER_1), texture_id=FLOWER_1)
+                                    self.map.append(rect)
+                                elif random.random() > 0.95:
+                                    rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "GRASS_1", self.window.get(), self.spritesheet.image(GRASS_1), texture_id=GRASS_1)
+                                    self.map.append(rect)
+                                elif random.random() > 0.95:
+                                    rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "GRASS_2", self.window.get(), self.spritesheet.image(GRASS_2), texture_id=GRASS_2)
+                                    self.map.append(rect)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
                             rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
@@ -171,7 +181,7 @@ class Environment:
         for block in self.player.blocks_to_remove:
             if block in self.map:
                 if len(block.type) <= 1:
-                    results = BLOCK_DROPS[ID_STR(block.type)]
+                    results = BLOCK_DROPS[ID_STR(block.texture_id)]
                 else:
                     results = BLOCK_DROPS[block.type]
                 for result in results:

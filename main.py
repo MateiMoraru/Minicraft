@@ -4,7 +4,7 @@ from spritesheet import Spritesheet
 from window import Window
 from environment import Environment
 from text import Text
-from sfx_manager import SFX
+from sfx_manager import *
 
 # GAME STATES
 MAINMENU = 0
@@ -25,6 +25,7 @@ class Main:
         self.spritesheet = Spritesheet("assets/spritesheet.png", 16, 256)
         self.spritesheet_ui = Spritesheet("assets/spritesheet_ui.png", 16, 64)
         self.sfx = SFX()
+        self.sfx.play(BACKGROUND_NOISE, 0.3)
         print("Initialising objects...")
         self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)
         print("Done!")

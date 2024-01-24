@@ -1,5 +1,6 @@
 import math
 import random
+import time
 import pygame
 from animation import Animation
 from crafting import Crafting
@@ -23,13 +24,14 @@ class Player:
         self.default_texture = self.player.texture
         self.update_colliders()
         self.collided = [False, False, False, False]
+        self.walk_sfx_time = time.time()
 
         self.selected_block = 0
         self.blocks_to_remove = []
         self.blocks_to_add = []
 
         self.health = 10
-        self.heart_texture = spritesheet_ui.image(UI_HEART, size=(32, 32))
+        self.heart_texture = spritesheet_ui.image(UI_HEART, size=(45, 45))
 
         self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
         self.crafting = Crafting(window, spritesheet, spritesheet_ui, font2)
@@ -75,10 +77,10 @@ class Player:
 
     
     def draw_health(self):
-        pos = [self.window.size[0] - 32, 0]
+        pos = [self.window.size[0] - 46, 0]
         for i in range(0, self.health, 2):
             self.window.get().blit(self.heart_texture, pos)
-            pos[0] -= 32
+            pos[0] -= 46
 
 
     def draw_colliders(self):
@@ -127,8 +129,15 @@ class Player:
             self.direction = "stand"
             self.sfx.stop(WALK)
         else:
-            if random.random() > 0.95:
-                self.sfx.play(WALK)
+            delay = 0.3 + random.uniform(-0.1, 0.25)
+            if self.in_water:
+                delay = 0.9
+            if time.time() - self.walk_sfx_time > delay:
+                if not self.in_water:
+                    self.sfx.play(WALK)
+                else:
+                    self.sfx.play(SWIM)
+                self.walk_sfx_time = time.time()
             self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2 + move[0], self.player.pos[1] + self.player.size[1] + move[1]], floor_block.texture_id, multiplier=0.1)
 
         self.collided = [False, False, False, False]
@@ -160,8 +169,9 @@ class Player:
 
         if self.selected_block != 0:
             type = ID_STR(self.selected_block.texture_id)
+            print(type)
             for tool in BLOCK_BREAKING:
-                if ID_STR(current_tool[0]) == tool:
+                if ID_STR(current_tool[0]) == tool or tool == "ANY":
                     if type in BLOCK_BREAKING[tool]:
                         self.blocks_to_remove.append(self.selected_block)
 

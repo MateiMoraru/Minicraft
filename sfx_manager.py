@@ -5,6 +5,8 @@ ITEM_PICKUP = 1
 HIT_BLOCK = 2
 PLACE_BLOCK = 3
 WALK = 4
+BACKGROUND_NOISE = 5
+SWIM = 6
 
 class SFX:
     def __init__(self):
@@ -13,11 +15,14 @@ class SFX:
         hit_block = pygame.mixer.Sound("assets/sfx/hit-block.wav")
         place_block = pygame.mixer.Sound("assets/sfx/place-block.wav")
         walk = pygame.mixer.Sound("assets/sfx/walk.wav")
+        background_noise = pygame.mixer.Sound("assets/sfx/background-noise.mp3")
+        swim = pygame.mixer.Sound("assets/sfx/swim.mp3")
 
-        self.sounds = [damage, item_pickup, hit_block, place_block, walk]
+        self.sounds = [damage, item_pickup, hit_block, place_block, walk, background_noise, swim]
 
     
-    def play(self, sound: int):
+    def play(self, sound: int, volume: float=1.0):
+        pygame.mixer.Sound.set_volume(self.sounds[sound], volume)
         pygame.mixer.Sound.play(self.sounds[sound])
 
 
