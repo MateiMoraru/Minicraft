@@ -169,8 +169,11 @@ class Player:
 
     
     def harm(self, damage: int, source: str=None):
+        self.sfx.play(DAMAGE)
         self.health -= damage
         self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2, self.player.pos[1] + self.player.size[1] / 2], BLOOD, multiplier=2)
+        self.damage_source = source
+
 
     def attack(self):
         current_tool = self.inventory.item
@@ -186,6 +189,7 @@ class Player:
                 if ID_STR(current_tool[0]) == tool or tool == "ANY":
                     if type in BLOCK_BREAKING[tool]:
                         self.blocks_to_remove.append(self.selected_block)
+
 
     def place(self):
         if self.inventory.item[0] in BLOCK_PLACABLE and self.selected_block.texture_id in BACKGROUND_BLOCKS:

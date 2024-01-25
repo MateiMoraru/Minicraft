@@ -2,6 +2,8 @@ import pygame
 from button import Button
 from typing import List, Tuple
 
+from text import Text
+
 class Menu:
     def __init__(self, window:pygame.Surface, window_size:tuple, size:tuple, offset:tuple=(0, 0), color:tuple=(50, 50, 50, 255)):
         self.toggled = False
@@ -16,14 +18,19 @@ class Menu:
         self.menu.fill(self.color)
 
         self.buttons = []
+        self.text = []
 
     
     def draw(self):
         self.window.blit(self.menu, (self.pos[0], self.pos[1])) 
-        #pygame.draw.rect(self.window, self.color, [self.pos[0], self.pos[1], self.size[0], self.size[1]])
 
-        for button in self.buttons:
-            button.loop()
+        self.draw_buttons()
+        self.draw_text()
+
+
+    def draw_text(self):
+        for text in self.text:
+            text.draw(self.window)
             
 
     def draw_buttons(self):
@@ -33,3 +40,6 @@ class Menu:
     
     def add_buttons(self, onclick, font:pygame.Font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), text:str="", text_color:tuple=(0, 0, 0)):
         self.buttons.append(Button(onclick, self.window, self.window_size, font, pos, size, color, (79, 88, 92, 255), text, text_color))
+
+    def add_text(self, font:pygame.Font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), text:str=""):
+        self.text.append(Text(font, text, color, pos))

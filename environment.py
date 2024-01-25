@@ -9,6 +9,7 @@ from window import Window
 from particles import Particles
 from sfx_manager import *
 from light import LightSource
+from zombie import Zombie
 
 class Environment:
     def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
@@ -35,6 +36,9 @@ class Environment:
         self.time_acceleration = .1
         self.light_filter = pygame.surface.Surface(self.window.size)
         self.light_filter.fill((100, 100, 100))
+
+        self.entities = []
+        self.entities.append(Zombie(self.window, self.spritesheet, self.player.player.pos, self.sprite_size))
 
     def generate_map(self):
         size = 120
@@ -64,51 +68,50 @@ class Environment:
                         water = [pos[0], pos[1], random.randint(2, 5)]
                     if (patch_of_sand is None or dist_point(pos, (patch_of_sand[0], patch_of_sand[1])) > patch_of_sand[2] * self.sprite_size) and (water is None or dist_point(pos, (water[0], water[1])) > water[2] * self.sprite_size):
                         if block_id is not None:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), block_type, self.window.get(), self.spritesheet.image(block_id), texture_id=block_id)
-                            self.map.append(rect)
-
+                            self.add_rect(pos, block_id)
                             if block_type == "GRASS_BLOCK" and random.random() > 0.95:
-                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "TREE_1", self.window.get(), self.spritesheet.image(TREE_1), collidable=True, texture_id=TREE_1)
-                                self.map.append(rect)
+                                self.add_rect(pos, TREE_1)
                             elif (block_type == "SAND_BLOCK" or block_type == "GRASS_BLOCK") and random.random() > 0.96:
-                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_1", self.window.get(), self.spritesheet.image(ROCK_1), collidable=True, texture_id=ROCK_1)
-                                self.map.append(rect)
+                                self.add_rect(pos, ROCK_1)
                             elif block_type == "GRASS_BLOCK" and random.random() > 0.995:
-                                rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "ROCK_IRON", self.window.get(), self.spritesheet.image(ROCK_IRON), collidable=True, texture_id=ROCK_IRON)
-                                self.map.append(rect)
+                                self.add_rect(pos, ROCK_IRON)
                             elif block_type == "GRASS_BLOCK":
                                 if random.random() > 0.98:
-                                    rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "FLOWER_1", self.window.get(), self.spritesheet.image(FLOWER_1), texture_id=FLOWER_1)
-                                    self.map.append(rect)
+                                    self.add_rect(pos, FLOWER_1)
                                 elif random.random() > 0.95:
-                                    rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "GRASS_1", self.window.get(), self.spritesheet.image(GRASS_1), texture_id=GRASS_1)
-                                    self.map.append(rect)
+                                    self.add_rect(pos, GRASS_1)
                                 elif random.random() > 0.95:
-                                    rect = Rect(pos, (self.sprite_size * 1, self.sprite_size * 1), (0, 0, 0), "GRASS_2", self.window.get(), self.spritesheet.image(GRASS_2), texture_id=GRASS_2)
-                                    self.map.append(rect)
+                                    self.add_rect(pos, GRASS_2)
+                                elif random.random() > 0.95:
+                                    self.add_rect(pos, BUSH)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
-                            self.map.append(rect)
+                            self.add_rect(pos, WATER_BLOCK_1)
                         else:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
-                            self.map.append(rect)
+                            self.add_rect(pos, WATER_BLOCK_1)
                         if random.random() > 0.99:
                             patch_of_sand = None
                     else:
                         if dist_point(pos, (patch_of_sand[0], patch_of_sand[1])) < patch_of_sand[2] * self.sprite_size:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "SAND_BLOCK", self.window.get(), self.spritesheet.image(SAND_BLOCK), texture_id=SAND_BLOCK)
-                            self.map.append(rect)
+                            self.add_rect(pos, SAND_BLOCK)
                         else:
-                            rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), "WATER_BLOCK_1", self.window.get(), self.spritesheet.image(WATER_BLOCK_1), texture_id=WATER_BLOCK_1)
-                            self.map.append(rect)
+                            self.add_rect(pos, WATER_BLOCK_1)
                         if random.random() > 0.98:
                             patch_of_sand = None
                 else:
                     block_type = "WATER_BLOCK_1"
                     block_id = WATER_BLOCK_1
-                    rect = Rect(pos, (self.sprite_size, self.sprite_size), (0, 0, 0), block_type, self.window.get(), self.spritesheet.image(block_id), texture_id=block_id)
-                    self.map.append(rect)
+                    self.add_rect(pos, block_id)
+
+    def add_rect(self, pos: Tuple[int, int], texture_id: int, coll: bool=False):
+        size = (self.sprite_size, self.sprite_size)
+        color = (0, 0, 0)
+        block_type = ID_STR(texture_id)
+        window = self.window.get()
+        tex = self.spritesheet.image(texture_id)
+        rect = Rect(pos, size, color, block_type, window, tex, collidable=coll, texture_id=texture_id)
+        self.map.append(rect)
+
 
     def draw(self):
         offset = self.player.offset
@@ -131,7 +134,9 @@ class Environment:
                         block.set_texture(self.spritesheet.image(GRASS_BLOCK))
                 
                 if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
-                    collided = self.player.check_collision(block)
+                    self.player.check_collision(block)
+                    for entity in self.entities:
+                        entity.check_collision(block, offset=offset)
                 if block.texture_id == DOOR_CLOSED:
                     if block.collide_rect(self.player.player.rect, offset=offset):
                         block.set_texture(self.spritesheet.image(DOOR_OPENED))
@@ -169,8 +174,7 @@ class Environment:
             if isinstance(block, Campfire):
                 if block.campfire.collide_rect(self.player.player.rect, offset=offset):
                     if random.random() > 0.99:
-                        self.player.harm(1)
-                        self.sfx.play(DAMAGE)
+                        self.player.harm(1, "FIRE")
                 if block.campfire.collide_point(pygame.mouse.get_pos(), offset=offset):
                     self.selected_block = block
                 
@@ -185,6 +189,10 @@ class Environment:
                 self.ground_items.remove(item)
                 self.player.inventory.add_item([item.type, 1])
                 self.sfx.play(ITEM_PICKUP)
+
+        for entity in self.entities:
+            entity.draw(offset=offset)
+            entity.loop(self.player, offset=offset)
 
         if changed_water_tex:
             self.water_animation_timer = 0

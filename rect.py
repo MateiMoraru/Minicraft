@@ -94,6 +94,10 @@ class Rect:
         self.velocity[1] += velo[1]
 
 
+    def move(self, x: float, y: float):
+        self.pos = [self.pos[0] + x, self.pos[1] + y]
+
+
 def rect(window: pygame.Surface, pos: tuple, size: tuple, color: tuple):
     surf = pygame.Surface(size)
     surf.set_alpha(color[3])

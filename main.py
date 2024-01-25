@@ -1,3 +1,4 @@
+import time
 import pygame
 from menu import Menu
 from spritesheet import Spritesheet
@@ -11,24 +12,27 @@ MAINMENU = 0
 INGAME = 1
 INVENTORY = 2
 CRAFTING = 3
+DIED_MENU = 4
 
 class Main:
     def __init__(self):
+        start = time.time()
         print("Initialising pygame...")
         pygame.init()
         print("Initialising window...")
         self.window = Window(size=(1200, 800), fps=0, window_title="Minicraft")
         self.window.set_color((54, 119, 224))
-        print("Loading fonts and sprites...")
+        print("Loading fonts...")
         self.font = pygame.Font("assets/font.ttf", 30)
         self.font2 = pygame.Font("assets/font.ttf", 15)
+        print("Loading spritesheets and sound effects...")
         self.spritesheet = Spritesheet("assets/spritesheet.png", 16, 256)
         self.spritesheet_ui = Spritesheet("assets/spritesheet_ui.png", 16, 64)
         self.sfx = SFX()
         self.sfx.play(BACKGROUND_NOISE, 0.3)
-        print("Initialising objects...")
+        print("Initialising environment...")
         self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)
-        print("Done!")
+        print(f"Done! (Everything loaded correctly in {round((time.time() - start) * 1000, 2)}ms)")
         
         self.running = True
         self.state = 0
@@ -36,6 +40,11 @@ class Main:
         main_menu.add_buttons(self.main_menu_start, self.font, (self.window.size[0] / 2 , self.window.size[1] / 2), (500, 50), (111, 123, 128, 255), "Start Game")
         main_menu.add_buttons(self.quit, self.font, (self.window.size[0] / 2, self.window.size[1] / 2 + 100), (500, 50), (111, 123, 128, 255), "Exit")
         self.main_menu = main_menu
+
+        died_menu = Menu(self.window.get(), self.window.size, self.window.size)
+        died_menu.add_buttons(self.died_menu_restart, self.font, (self.window.size[0] / 2 , self.window.size[1] / 2), (500, 50), (111, 123, 128, 255), "Restart Game")
+        died_menu.add_buttons(self.quit, self.font, (self.window.size[0] / 2, self.window.size[1] / 2 + 100), (500, 50), (111, 123, 128, 255), "Exit")
+        self.died_menu = died_menu
 
 
 
@@ -69,6 +78,16 @@ class Main:
                             self.state = INGAME
                         elif self.state == INGAME:
                             self.state = INVENTORY
+                    if e.key == pygame.K_1:
+                        self.environment.player.inventory.selected_item(0)
+                    if e.key == pygame.K_2:
+                        self.environment.player.inventory.selected_item(1)
+                    if e.key == pygame.K_3:
+                        self.environment.player.inventory.selected_item(2)
+                    if e.key == pygame.K_4:
+                        self.environment.player.inventory.selected_item(3)
+                    if e.key == pygame.K_5:
+                        self.environment.player.inventory.selected_item(4)
                 if self.state == INGAME:
                     if e.type == pygame.MOUSEWHEEL:
                         self.environment.player.inventory.change_item(e.y)
@@ -80,21 +99,30 @@ class Main:
                             r = self.environment.player.place()
                             if r == "CRAFT":
                                 self.state = CRAFTING
+            if self.environment.player.health <= 0:
+                self.state = DIED_MENU
+                text = f"Died due to {self.environment.player.damage_source}"
+                self.died_menu.add_text(self.font, (self.window.size[0] / 2 - self.font.size(text)[0] / 2, self.window.size[1] / 2 - 100), (500, 50), (255, 255, 255, 255), text)
+            
             self.draw()
         
 
     def draw(self):
         self.window.draw_start()
-        self.environment.draw()
         if self.state == INGAME:
+            self.environment.draw()
             self.environment.loop()
         if self.state == MAINMENU:
             self.main_menu.draw()
         if self.state == INVENTORY:
+            self.environment.draw()
             self.environment.player.inventory.draw_inventory()
         if self.state == CRAFTING:
+            self.environment.draw()
             self.environment.player.crafting.draw(self.environment.player.inventory)
             self.environment.player.inventory.draw_inventory()
+        if self.state == DIED_MENU:
+            self.died_menu.draw()
         Text(self.font, f"FPS: {self.window.get_fps()}", (0, 0, 0), (0, 0)).draw(self.window.get())
         self.window.draw_end()
 
@@ -102,6 +130,10 @@ class Main:
     def main_menu_start(self):
         self.state = INGAME
 
+
+    def died_menu_restart(self):
+        self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)
+        self.state = MAINMENU
 
     def quit(self, code:int=0):
         print(f"Exited program with exit code: {code}")

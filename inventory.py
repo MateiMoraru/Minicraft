@@ -94,7 +94,6 @@ class Inventory:
                         self.hovering_item = self.hotbar[self.selected_hotbar_inventory_slot]
                         self.hotbar[self.selected_hotbar_inventory_slot] = [-1, -1]
                         self.select_hover_time = time.time()
-                        print(self.hovering_item)
                     elif self.hotbar[self.selected_hotbar_inventory_slot][0] == -1:
                         self.hotbar[self.selected_hotbar_inventory_slot] = self.hovering_item
                         self.hovering_item = None
@@ -148,6 +147,10 @@ class Inventory:
         if free_slot is not None:
             self.inventory[free_slot] = [item[0], item[1]]
             return
+        
+    
+    def selected_item(self, index: int):
+        self.selected_hotbar_slot = index
         
 
     def remove_current_item(self, amount: int=None):
