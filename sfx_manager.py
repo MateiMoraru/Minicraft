@@ -7,6 +7,7 @@ PLACE_BLOCK = 3
 WALK = 4
 BACKGROUND_NOISE = 5
 SWIM = 6
+ZOMBIE_DIE = 7
 
 class SFX:
     def __init__(self):
@@ -17,8 +18,9 @@ class SFX:
         walk = pygame.mixer.Sound("assets/sfx/walk.wav")
         background_noise = pygame.mixer.Sound("assets/sfx/background-noise.mp3")
         swim = pygame.mixer.Sound("assets/sfx/swim.mp3")
+        zombie_die = pygame.mixer.Sound("assets/sfx/zombie-die.mp3")
 
-        self.sounds = [damage, item_pickup, hit_block, place_block, walk, background_noise, swim]
+        self.sounds = [damage, item_pickup, hit_block, place_block, walk, background_noise, swim, zombie_die]
 
     
     def play(self, sound: int, volume: float=1.0):

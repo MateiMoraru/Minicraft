@@ -7,16 +7,18 @@ from crafting import Crafting
 from inventory import Inventory
 from light import LightSource
 from particles import Particles
-from rect import Rect
+from rect import *
 from window import Window
 from spritesheet import *
 from sfx_manager import *
+from text import *
 
 class Player:
     def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
         self.window = window
         self.spritesheet = spritesheet
         self.sfx = sfx
+        self.font = font
         self.speed = 0.5
         self.direction = "stand"
         self.offset = [0, 0]
@@ -27,12 +29,18 @@ class Player:
         self.collided = [False, False, False, False]
         self.walk_sfx_time = time.time()
 
-        self.selected_block = 0
+        self.selected_block = None
+        self.selected_entity = None
+        self.current_damage = 1
         self.blocks_to_remove = []
         self.blocks_to_add = []
+        self.xp = 5
+        self.level_up = 10
+        self.level = 1
 
         self.health = 10
         self.heart_texture = spritesheet_ui.image(UI_HEART, size=(45, 45))
+        self.xp_bar_texture = spritesheet_ui.image(UI_XP_BAR, size=(350, 90))
 
         self.inventory = Inventory(window, spritesheet, spritesheet_ui, font2)
         self.crafting = Crafting(window, spritesheet, spritesheet_ui, font2)
@@ -67,6 +75,16 @@ class Player:
         self.collider_middle = collider_middle
 
 
+    def update_current_damage(self):
+        current_tool = self.inventory.item[0]
+        if current_tool not in WEAPON_DAMAGE:
+            self.current_damage = 1
+            return
+        for tool in WEAPON_DAMAGE:
+            if tool == current_tool:
+                self.current_damage = WEAPON_DAMAGE[tool]
+
+
     def draw(self):
         if self.in_water:
             tex = self.player.texture
@@ -78,6 +96,17 @@ class Player:
         self.player.draw()
         self.inventory.draw()
         self.draw_health()
+        self.draw_xp_bar()
+
+
+    def draw_xp_bar(self):
+        pos = (self.window.size[0] / 2 - 175, -20)
+        self.window.get().blit(self.xp_bar_texture, pos)
+        w = self.xp / self.level_up * 350
+        #print(w)
+        rect(self.window.get(), (pos[0] + 22, pos[1] + 39), (w, 5), (108, 43, 138, 200))
+        Text(self.font, str(self.level), (198, 169, 212), (pos[0] - 20, pos[1] + 29)).draw(self.window.get())
+        Text(self.font, str(self.level + 1), (198, 169, 212), (pos[0] + 360, pos[1] + 29)).draw(self.window.get())
 
     
     def draw_health(self):
@@ -167,6 +196,15 @@ class Player:
     def set_in_water(self, bool=True):
         self.in_water = bool
 
+
+    def add_xp(self, xp: int):
+        self.xp += xp
+
+        if self.xp > self.level_up:
+            self.xp = 0
+            self.level += 1
+            self.level_up *= 2.5
+
     
     def harm(self, damage: int, source: str=None):
         self.sfx.play(DAMAGE)
@@ -178,7 +216,10 @@ class Player:
     def attack(self):
         current_tool = self.inventory.item
 
-        if self.selected_block != 0:
+        if self.selected_entity is not None:
+            self.selected_entity.harm(self.current_damage)
+            return
+        if self.selected_block:
             type = ID_STR(self.selected_block.texture_id)
             if type == "GRASS_BLOCK" and current_tool[0] == SHOVEL:
                 self.blocks_to_remove.append(self.selected_block)

@@ -1,6 +1,7 @@
 import random
 import pygame
 from campfire import Campfire
+from enemy import Enemy
 from item import Item
 from player import Player
 from spritesheet import *
@@ -10,6 +11,7 @@ from particles import Particles
 from sfx_manager import *
 from light import LightSource
 from zombie import Zombie
+from text import *
 
 class Environment:
     def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
@@ -20,9 +22,11 @@ class Environment:
         self.font2 = font2
         self.sprite_size = 64
         self.map = []
+        print("\tGenerating map...")
         self.generate_map()
         self.player = Player(window, spritesheet, spritesheet_ui, font, font2, sfx)
         self.selected_block = 0
+        self.selected_entity = 0
         self.water_animation_timer = 0
         self.sfx = sfx
 
@@ -31,14 +35,16 @@ class Environment:
         self.light_sources = []
         self.particles = Particles(self.window, self.spritesheet, (0, 0), 5)
 
-        self.time = 2000
+        self.time = 7000
         self.time_direction = 1
         self.time_acceleration = .1
         self.light_filter = pygame.surface.Surface(self.window.size)
         self.light_filter.fill((100, 100, 100))
 
         self.entities = []
-        self.entities.append(Zombie(self.window, self.spritesheet, self.player.player.pos, self.sprite_size))
+        self.entities.append(Zombie(self.window, self.spritesheet, sfx, self.player.player.pos, self.sprite_size))
+
+        self.floating_texts = []
 
     def generate_map(self):
         size = 120
@@ -116,6 +122,9 @@ class Environment:
     def draw(self):
         offset = self.player.offset
         self.water_animation_timer += self.window.delta_time
+        self.selected_entity = None
+        self.player.selected_entity = None
+        self.selected_block = None
         changed_water_tex = False
         
         self.player.set_in_water(False)
@@ -133,10 +142,12 @@ class Environment:
                     if random.random() > 0.999:
                         block.set_texture(self.spritesheet.image(GRASS_BLOCK))
                 
-                if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
-                    self.player.check_collision(block)
-                    for entity in self.entities:
-                        entity.check_collision(block, offset=offset)
+                if block.collidable or block.texture_id in BLOCK_COLLIDABLE or block.texture_id in ENEMY_COLLIDABLE:
+                    if not block.texture_id in ENEMY_COLLIDABLE and block.texture_id in BLOCK_COLLIDABLE:
+                        self.player.check_collision(block)
+                    elif block.texture_id in ENEMY_COLLIDABLE + BLOCK_COLLIDABLE:
+                        for entity in self.entities:
+                            entity.check_collision(block, offset=offset)
                 if block.texture_id == DOOR_CLOSED:
                     if block.collide_rect(self.player.player.rect, offset=offset):
                         block.set_texture(self.spritesheet.image(DOOR_OPENED))
@@ -147,7 +158,6 @@ class Environment:
                         block.texture_id = DOOR_CLOSED
                 if block.collide_rect(self.player.colliders[1].rect, offset=offset):
                     self.player_floor_block = block
-                
 
                 mouse_pos = pygame.mouse.get_pos()
                 if dist_point(self.player.player.center, mouse_pos) <= 3 * self.sprite_size and block.collide_point(mouse_pos, offset=offset):
@@ -193,12 +203,30 @@ class Environment:
         for entity in self.entities:
             entity.draw(offset=offset)
             entity.loop(self.player, offset=offset)
+            if entity.health <= 0:
+                self.entities.remove(entity)
+                self.selected_entity = None
+                self.player.selected_entity = None
+                self.player.add_xp(2)
+                self.floating_texts.append(FloatingText(self.font, "+2", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 10), (0, 0.2)))
+
+            if isinstance(entity, Enemy):
+                if entity.enemy.collide_point(pygame.mouse.get_pos(), offset=offset):
+                    self.selected_entity = entity
+                    self.player.selected_entity = self.selected_entity
+                    rect(self.window.get(), (entity.enemy.pos[0] + offset[0], entity.enemy.pos[1] + offset[1]), entity.enemy.size, (0, 0, 0, 50))
 
         if changed_water_tex:
             self.water_animation_timer = 0
 
         self.particles.draw()
         self.player.draw()
+        for text in self.floating_texts:
+            text.draw(self.window.get())
+            text.loop()
+
+            if time.time() - text.time > 3.5:
+                self.floating_texts.remove(text)
 
     
     def in_boundaries(self, block: Rect, offset: Tuple[int, int]):
@@ -255,6 +283,9 @@ class Environment:
                 self.light_sources.append(LightSource(self.window, self.selected_block.center, 3, color=(255, 226, 110)))
                 if block[0] == CAMPFIRE_1:
                     self.special_blocks.append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
+                    self.floating_texts.append(FloatingText(self.font, "New Beggining", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 10), (0, 0.2)))
+                    self.floating_texts.append(FloatingText(self.font, "+1", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 30), (0, 0.2)))
+                    self.player.add_xp(1)
                 elif block[0] == TORCH:
                     self.special_blocks.append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "TORCH", self.window.get(), self.spritesheet.image(TORCH, size=(self.sprite_size, self.sprite_size))))
             self.particles.add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
