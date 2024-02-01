@@ -3,7 +3,7 @@ from typing import *
 import pygame
 
 class Rect:
-    def __init__(self, pos:Tuple[float], size:Tuple[float], color:Tuple[int], type:str, window:pygame.Surface, texture:pygame.Surface=None, collidable:bool=False, texture_id:int=None):
+    def __init__(self, pos:Tuple[float], size:Tuple[float], color:Tuple[int], type:str, window:pygame.Surface, texture:pygame.Surface=None, collidable:bool=False, texture_id:int=None, underground=False):
         self.pos = pos
         self.size = size
         self.type = type
@@ -11,6 +11,7 @@ class Rect:
         self.window = window
         self.texture = texture
         self.texture_id = texture_id
+        self.underground = underground
         self.velocity = [0, 0]
         if texture is not None:
             self.texture = pygame.transform.scale(self.texture, self.size)
@@ -19,21 +20,22 @@ class Rect:
         self.light = 0
         self.collidable = collidable
 
-    def draw(self, offset: Tuple[int, int]=(0, 0)):
-        self.center = (self.pos[0] + self.size[0] / 2, self.pos[1] + self.size[1] / 2)
-        pos = [self.pos[0] + offset[0], self.pos[1] + offset[1]]
+    def draw(self, offset: Tuple[int, int]=(0, 0), underground: bool=False):
+        if underground == self.underground:
+            self.center = (self.pos[0] + self.size[0] / 2, self.pos[1] + self.size[1] / 2)
+            pos = [self.pos[0] + offset[0], self.pos[1] + offset[1]]
 
-        if self.texture == None:
-            if self.type != "air":
-                pygame.draw.rect(self.window, self.color, self.rect)
-        else:
-            self.window.blit(self.texture, pos)
-        if self.light > 0:
-            rect(self.window, pos, self.size, (255, 255, 255, self.light))
-        elif self.light < 0:
-            rect(self.window, pos, self.size, (0, 0, 0, -self.light))
+            if self.texture == None:
+                if self.type != "air":
+                    pygame.draw.rect(self.window, self.color, self.rect)
+            else:
+                self.window.blit(self.texture, pos)
+            if self.light > 0:
+                rect(self.window, pos, self.size, (255, 255, 255, self.light))
+            elif self.light < 0:
+                rect(self.window, pos, self.size, (0, 0, 0, -self.light))
 
-        self.pos = [self.pos[0] + self.velocity[0], self.pos[1] + self.velocity[1]]
+            self.pos = [self.pos[0] + self.velocity[0], self.pos[1] + self.velocity[1]]
 
 
     def collide_point(self, point, offset:tuple=(0, 0)):

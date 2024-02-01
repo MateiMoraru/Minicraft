@@ -6,13 +6,14 @@ from spritesheet import Spritesheet
 
 
 class Particles:
-    def __init__(self, window: Window, spritesheet: Spritesheet, pos: Tuple[int, int], size: int=10, acceletaion: int=0.2, multiplier: int=1):
+    def __init__(self, window: Window, spritesheet: Spritesheet, pos: Tuple[int, int], size: int=10, acceletaion: int=0.2, multiplier: int=1, underground: bool=False):
         self.window = window
         self.spritesheet = spritesheet
         self.pos = pos
         self.size = size
         self.acceletaion = acceletaion
         self.multiplier = multiplier
+        self.underground = underground
         self.particles_amount = 10
         self.particles = []
         self.gravity = True
@@ -42,10 +43,11 @@ class Particles:
         return particle
     
 
-    def draw(self, offset: Tuple[int, int]=(0, 0)):
-        for particle in self.particles:
-            particle.draw(offset)
-            rect(self.window.get(), (particle.pos[0] + offset[0], particle.pos[1] + offset[1]), particle.size, particle.color)
+    def draw(self, offset: Tuple[int, int]=(0, 0), underground: bool=False):
+        if underground == self.underground:
+            for particle in self.particles:
+                particle.draw(offset)
+                rect(self.window.get(), (particle.pos[0] + offset[0], particle.pos[1] + offset[1]), particle.size, particle.color)
 
     
     def loop(self, die_chance: float=0.95):

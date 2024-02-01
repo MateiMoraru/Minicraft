@@ -19,9 +19,12 @@ class Player:
         self.spritesheet = spritesheet
         self.sfx = sfx
         self.font = font
+        self.font2 = font2
         self.speed = 0.5
         self.direction = "stand"
         self.offset = [0, 0]
+        self.underground_offset = [0, 0]
+        self.underground = False
         self.size = [64, 64]
         self.player = Rect((window.get_center()[0] - self.size[0] / 2, window.get_center()[1] - self.size[1] / 2), self.size, (0, 0, 0), "PLAYER", self.window.get(), spritesheet.image(PLAYER_1))
         self.default_texture = self.player.texture
@@ -97,16 +100,17 @@ class Player:
         self.inventory.draw()
         self.draw_health()
         self.draw_xp_bar()
+        self.draw_colliders()
 
 
     def draw_xp_bar(self):
         pos = (self.window.size[0] / 2 - 175, -20)
         self.window.get().blit(self.xp_bar_texture, pos)
         w = self.xp / self.level_up * 350
-        #print(w)
         rect(self.window.get(), (pos[0] + 22, pos[1] + 39), (w, 5), (108, 43, 138, 200))
         Text(self.font, str(self.level), (198, 169, 212), (pos[0] - 20, pos[1] + 29)).draw(self.window.get())
         Text(self.font, str(self.level + 1), (198, 169, 212), (pos[0] + 360, pos[1] + 29)).draw(self.window.get())
+        Text(self.font2, f"{self.xp}/{self.level_up}", (198, 169, 212), (pos[0] + 150, pos[1] + 50)).draw(self.window.get())
 
     
     def draw_health(self):
@@ -123,15 +127,19 @@ class Player:
 
 
     def check_collision(self, block: Rect):
+        offset = self.offset
+        if self.underground:
+            offset = self.underground_offset
+        
         collided = False
         for collider in self.colliders:
-            if block.collide_rect(collider.rect, offset=self.offset):
+            if block.collide_rect(collider.rect, offset=offset):
                 self.collided[self.colliders.index(collider)] = True
                 collided = True
         return collided
 
 
-    def loop(self, delta_time: float, floor_block: Rect):
+    def loop(self, delta_time: float, floor_block: Rect, debugging=False):
         self.update_colliders()
         self.particles.loop(0.75)
 
@@ -159,8 +167,12 @@ class Player:
         if self.in_water:
             move[0] /= 2
             move[1] /= 2
-        self.offset[0] += move[0]
-        self.offset[1] += move[1]
+        if not self.underground:
+            self.offset[0] += move[0]
+            self.offset[1] += move[1]
+        else:
+            self.underground_offset[0] += move[0]
+            self.underground_offset[1] += move[1]
 
         if move[0] == 0 and move[1] == 0:
             self.direction = "stand"
@@ -171,11 +183,13 @@ class Player:
                 delay = 0.9
             if time.time() - self.walk_sfx_time > delay:
                 if not self.in_water:
-                    self.sfx.play(WALK)
+                    self.sfx.play(WALK, debugging=debugging)
                 else:
-                    self.sfx.play(SWIM)
+                    self.sfx.play(SWIM, debugging=debugging)
                 self.walk_sfx_time = time.time()
-            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2 + move[0], self.player.pos[1] + self.player.size[1] + move[1]], floor_block.texture_id, multiplier=0.1)
+            x = 3
+            x_mult, y_mult = (random.uniform(.1, x), random.uniform(.1, x))
+            self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2 + move[0] * x_mult, self.player.pos[1] + self.player.size[1] + move[1] * y_mult], floor_block.texture_id, multiplier=0.1)
 
         self.collided = [False, False, False, False]
 
@@ -206,11 +220,14 @@ class Player:
             self.level_up *= 2.5
 
     
-    def harm(self, damage: int, source: str=None):
-        self.sfx.play(DAMAGE)
+    def harm(self, damage: int, source: str=None, debugging=False):
+        if debugging:
+            print(f"Plyer took -{damage}hp from {source}")
+        self.sfx.play(DAMAGE, debugging=debugging)
         self.health -= damage
         self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2, self.player.pos[1] + self.player.size[1] / 2], BLOOD, multiplier=2)
         self.damage_source = source
+        return (damage, source)
 
 
     def attack(self):
@@ -218,7 +235,7 @@ class Player:
 
         if self.selected_entity is not None:
             self.selected_entity.harm(self.current_damage)
-            return
+            return ("ENTITY", self.current_damage)
         if self.selected_block:
             type = ID_STR(self.selected_block.texture_id)
             if type == "GRASS_BLOCK" and current_tool[0] == SHOVEL:
@@ -240,4 +257,10 @@ class Player:
             return "CRAFT"
         elif self.inventory.item[0] == CLAY:
             self.blocks_to_add.append(self.inventory.item)
+            self.inventory.remove_current_item(1)
+        elif self.inventory.item[0] in FRUIT:
+            dhealth = FRUIT_HEALTH[ID_STR(self.inventory.item[0])]
+            if self.health + dhealth <= 10:
+                self.health += dhealth
+            self.sfx.play(EAT)
             self.inventory.remove_current_item(1)

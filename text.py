@@ -55,11 +55,14 @@ class Text(Sprite):
         
 
 class FloatingText(Text):
-    def __init__(self, font: pygame.font, text: str, color: Tuple[int, int, int], pos: Tuple[int, int], velocity: Tuple[int, int]):
+    def __init__(self, font: pygame.font, text: str, color: Tuple[int, int, int], pos: Tuple[int, int], velocity: Tuple[int, int], fadeout: int=2):
         super().__init__(font, text, color, pos, True)
         self.velocity = velocity
         self.time = time.time()
+        self.fadeout = fadeout
 
     
     def loop(self):
         self.set_position((self._position[0] - self.velocity[0], self._position[1] - self.velocity[1]))
+        if time.time() - self.time > self.fadeout:
+            self._text = ""

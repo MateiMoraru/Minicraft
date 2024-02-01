@@ -1,3 +1,4 @@
+import random
 import time
 import pygame
 from typing import Tuple
@@ -23,6 +24,7 @@ class Enemy:
         if texture_id == ZOMBIE:
             self.damage_sound = ZOMBIE_DIE
         self.particles = Particles(self.window, self.spritesheet, pos, 5, .01, 1)
+        self.special_item = RANDOM_ZOMBIE_DROP[random.randint(0, len(RANDOM_ZOMBIE_DROP) - 1)]
 
         self.animation_down = Animation(window, spritesheet, 2, texture_id + 1, delay=0.15)
         self.animation_down.start()
@@ -128,3 +130,4 @@ class Enemy:
         self.particles.add_particles([self.enemy.pos[0] + self.enemy.size[0] / 2, self.enemy.pos[1] + self.enemy.size[1] / 2], BLOOD, multiplier=2)
         if self.health <= 0:
             self.sfx.play(self.damage_sound)
+        return (damage)

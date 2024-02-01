@@ -63,5 +63,6 @@ CRAFTING_RECIPES = {
     "PLANKS FLOOR": [(PLANK, 4), (PLANK_FLOOR, 1)],
     "DOOR": [(PLANK, 6), (DOOR_CLOSED, 1)],
     "CAMPFIRE": [(STICK, 4), (COAL, 2), (STONE, 3), (CAMPFIRE_1, 1)],
-    "BRICK_BLOCK": [(BRICK, 4), (BRICK_BLOCK, 1)]
+    "BRICK_BLOCK": [(BRICK, 4), (BRICK_BLOCK, 1)],
+    "TORCH": [(COAL, 1), (STICK, 2), (TORCH, 1)]
 }

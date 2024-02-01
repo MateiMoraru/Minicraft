@@ -10,7 +10,7 @@ class Spritesheet(object):
         try:
             self.sheet = pygame.image.load(filename).convert()
         except pygame.error as message:
-            print('Unable to load spritesheet image:', filename)
+            print('Failed to load spritesheet:', filename)
             print(message)
         
 
@@ -82,11 +82,19 @@ SHOVEL = 36
 GRASS_BLOCK_DUG = 37
 BRICK = 38
 BRICK_BLOCK = 39
+BLUEBERRY = 40
+STRAWBERRY = 41
+GOLD_NUGGET = 46
+BANANA = 47
 CRAFTING_TABLE = 48
 PLANK_BLOCK = 49
 PLANK_FLOOR = 50
 DOOR_CLOSED = 51
 DOOR_OPENED = 52
+STAIRSET = 53
+CAVE_DIRT = 54
+CAVE_STONE_1 = 55
+CAVE_STONE_2 = 56
 FLOWER_1 =  64
 GRASS_1 = 65
 GRASS_2 = 66
@@ -112,6 +120,18 @@ UI_INVENTORY_ITEM = 2
 UI_INVENTORY_ITEM_DARK = 3
 UI_HEART = 4
 UI_XP_BAR = 5
+
+FRUIT = [
+    BANANA,
+    STRAWBERRY,
+    BLUEBERRY
+]
+
+FRUIT_HEALTH = {
+    "BANANA": 2,
+    "STRAWBERRY": 1,
+    "BLUEBERRY": 1
+}
 
 BLOCK_BREAKING = {
     "ANY": ["GRASS_1", "GRASS_2", "FLOWER_1", "TORCH"],
@@ -166,7 +186,8 @@ BLOCK_COLLIDABLE = [
     PLANK_BLOCK,
     CAMPFIRE_1,
     ROCK_IRON,
-    BRICK_BLOCK
+    BRICK_BLOCK,
+    CAVE_STONE_2
 ]
 
 ENEMY_COLLIDABLE = [
@@ -177,7 +198,8 @@ ENEMY_COLLIDABLE = [
 BACKGROUND_BLOCKS = [
     GRASS_BLOCK,
     SAND_BLOCK,
-    PLANK_FLOOR
+    PLANK_FLOOR,
+    CAVE_DIRT
 ]
 
 SPECIAL_BLOCKS = [
@@ -188,6 +210,13 @@ SPECIAL_BLOCKS = [
 LIGHT_BLOCKS = [
     CAMPFIRE_1,
     TORCH
+]
+
+RANDOM_ZOMBIE_DROP = [
+    GOLD_NUGGET,
+    IRON_ORE,
+    BANANA,
+    None,
 ]
 
 ITEM_ID = {
@@ -228,7 +257,13 @@ ITEM_ID = {
     STONE_PICKAXE: "STONE_PICKAXE",
     STONE_AXE: "STONE_AXE",
     CLAY: "CLAY",
-    IRON_ORE: "IRON_ORE"
+    IRON_ORE: "IRON_ORE",
+    BANANA: "BANANA",
+    BLUEBERRY: "BLUEBERRY",
+    STRAWBERRY: "STRAWBERRY",
+    CAVE_DIRT: "CAVE_DIRT",
+    CAVE_STONE_1: "CAVE_STONE_1",
+    CAVE_STONE_2: "CAVE_STONE_2",
 }
 
 def ID_STR(id: int):

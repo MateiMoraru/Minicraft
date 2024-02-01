@@ -1,3 +1,4 @@
+import random
 from typing import Tuple
 import pyautogui
 import pygame
@@ -44,6 +45,13 @@ class Window:
     def set_color(self, color:Tuple[int, int, int]):
         self.background_color = color
 
+    @property
+    def boundaries(self):
+        return self.size
+    
+
+    def random_in_boundaries(self):
+        return (random.randint(0, self.size[0]), random.randint(0, self.size[1]))
 
     def quit(self):
         pygame.quit()

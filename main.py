@@ -4,7 +4,7 @@ from menu import Menu
 from spritesheet import Spritesheet
 from window import Window
 from environment import Environment
-from text import Text
+from text import FloatingText, Text
 from sfx_manager import *
 
 # GAME STATES
@@ -37,9 +37,11 @@ class Main:
         
         self.running = True
         self.state = 0
+        self.debugging = False
         main_menu = Menu(self.window.get(), self.window.size, self.window.size)
         main_menu.add_buttons(self.main_menu_start, self.font, (self.window.size[0] / 2 , self.window.size[1] / 2), (500, 50), (111, 123, 128, 255), "Start Game")
         main_menu.add_buttons(self.quit, self.font, (self.window.size[0] / 2, self.window.size[1] / 2 + 100), (500, 50), (111, 123, 128, 255), "Exit")
+        main_menu.add_buttons(self.debug, self.font, (self.window.size[0] / 2, self.window.size[1] / 2 + 200), (500, 50), (111, 123, 128, 255), "Debug Mode")
         self.main_menu = main_menu
 
         died_menu = Menu(self.window.get(), self.window.size, self.window.size)
@@ -95,11 +97,17 @@ class Main:
                     if e.type == pygame.MOUSEBUTTONDOWN:
                         mouse = pygame.mouse.get_pressed()
                         if mouse[0]:
-                            self.environment.player.attack()
+                            res = self.environment.player.attack()
+                            if res is not None and res[0] == "ENTITY":
+                                pos = self.environment.player.selected_entity.enemy.center
+                                self.environment.floating_texts.append(FloatingText(self.font, f"-{res[1]}", (200, 50, 50), (pos[0] + self.environment.player.offset[0], pos[1] + self.environment.player.offset[1]), (0, 0.3), fadeout=.5))
                         if mouse[2]:
                             r = self.environment.player.place()
                             if r == "CRAFT":
                                 self.state = CRAFTING
+            if self.environment.player.underground:
+                self.window.set_color((20, 9, 5))
+
             if self.environment.player.health <= 0:
                 self.state = DIED_MENU
                 text = f"Died due to {self.environment.player.damage_source}"
@@ -112,7 +120,7 @@ class Main:
         self.window.draw_start()
         if self.state == INGAME:
             self.environment.draw()
-            self.environment.loop()
+            self.environment.loop(self.debugging)
         if self.state == MAINMENU:
             self.main_menu.draw()
         if self.state == INVENTORY:
@@ -131,6 +139,9 @@ class Main:
     def main_menu_start(self):
         self.state = INGAME
 
+
+    def debug(self):
+        self.debugging = not self.debugging
 
     def died_menu_restart(self):
         self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)
