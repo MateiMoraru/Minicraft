@@ -6,6 +6,7 @@ from window import Window
 from environment import Environment
 from text import FloatingText, Text
 from sfx_manager import *
+from commands import Commands
 
 # GAME STATES
 MAINMENU = 0
@@ -17,21 +18,23 @@ DIED_MENU = 4
 class Main:
     def __init__(self):
         start = time.time()
-        print("Initialising pygame...")
+        print("INFO: Initialising pygame...")
         pygame.init()
-        print("Initialising window...")
+        print("INFO: Initialising window...")
         self.window = Window(size=(1200, 800), fps=0, window_title="Minicraft")
         self.window.set_color((54, 119, 224))
-        print("Loading fonts...")
+        self.window.set_ico("assets/ico.png")
+        print("INFO: Loading fonts...")
         self.font = pygame.Font("assets/font.ttf", 30)
         self.font2 = pygame.Font("assets/font.ttf", 15)
-        print("Loading spritesheets...")
+        print("INFO: Loading spritesheets...")
         self.spritesheet = Spritesheet("assets/spritesheet.png", 16, 256)
         self.spritesheet_ui = Spritesheet("assets/spritesheet_ui.png", 16, 64)
-        print("Loading sound effects...")
+        print("INFO: Loading sound effects...")
         self.sfx = SFX()
+        self.background_noise_start = time.time()
         self.sfx.play(BACKGROUND_NOISE, 0.3)
-        print("Initialising environment...")
+        print("INFO: Initialising environment...")
         self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)
         print(f"Done! (Everything loaded correctly in {round((time.time() - start) * 1000, 2)}ms)")
         
@@ -49,15 +52,17 @@ class Main:
         died_menu.add_buttons(self.quit, self.font, (self.window.size[0] / 2, self.window.size[1] / 2 + 100), (500, 50), (111, 123, 128, 255), "Exit")
         self.died_menu = died_menu
 
+        self.commands = Commands(self)
+
 
 
     def run(self):
-        #try:
-        self.loop()
-        self.quit(0)
-        #except Exception as e:
-        #    print(f"Encountered error: {e}")
-        #    self.quit(-1)
+        try:
+            self.loop()
+            self.quit(0)
+        except Exception as e:
+            print(f"Encountered error: {e}")
+            self.quit(-1)
 
 
     def loop(self):
@@ -91,6 +96,9 @@ class Main:
                         self.environment.player.inventory.selected_item(3)
                     if e.key == pygame.K_5:
                         self.environment.player.inventory.selected_item(4)
+                    if e.key == pygame.K_SLASH:
+                        command = input(">")
+                        self.commands.process_command(command)
                 if self.state == INGAME:
                     if e.type == pygame.MOUSEWHEEL:
                         self.environment.player.inventory.change_item(e.y)
@@ -113,6 +121,21 @@ class Main:
                 text = f"Died due to {self.environment.player.damage_source}"
                 self.died_menu.add_text(self.font, (self.window.size[0] / 2 - self.font.size(text)[0] / 2, self.window.size[1] / 2 - 100), (500, 50), (255, 255, 255, 255), text)
             
+            if time.time() - self.background_noise_start > 1.56 * 60 and self.environment.cave_level == 0:
+                print("INFO: Replaying background music")
+                self.background_noise_start = time.time()
+                self.sfx.stop(BACKGROUND_NOISE)
+                self.sfx.play(BACKGROUND_NOISE)
+            if self.environment.cave_level == 1 and not self.sfx.playing(CAVE_NOISE):
+                print("INFO: Player entered cave. Playing appropriate sound effects.")
+                self.sfx.stop(BACKGROUND_NOISE)
+                self.sfx.play(CAVE_NOISE)
+            if self.environment.cave_level == 0 and self.sfx.playing(CAVE_NOISE):
+                print("INFO: Player returned to surface. Playing appropriate sound effects.")
+                self.sfx.stop(CAVE_NOISE)
+                self.sfx.play(BACKGROUND_NOISE)
+
+
             self.draw()
         
 
@@ -133,6 +156,7 @@ class Main:
         if self.state == DIED_MENU:
             self.died_menu.draw()
         Text(self.font, f"FPS: {self.window.get_fps()}", (0, 0, 0), (0, 0)).draw(self.window.get())
+        Text(self.font, f"TIME: {int(self.environment.time / 10)}", (0, 0, 0), (0, 25)).draw(self.window.get())
         self.window.draw_end()
 
 
@@ -142,6 +166,7 @@ class Main:
 
     def debug(self):
         self.debugging = not self.debugging
+
 
     def died_menu_restart(self):
         self.environment = Environment(self.window, self.spritesheet, self.spritesheet_ui, self.font, self.font2, self.sfx)

@@ -40,6 +40,7 @@ class Player:
         self.xp = 5
         self.level_up = 10
         self.level = 1
+        self.last_cave_level_change = time.time()
 
         self.health = 10
         self.heart_texture = spritesheet_ui.image(UI_HEART, size=(45, 45))
@@ -222,7 +223,7 @@ class Player:
     
     def harm(self, damage: int, source: str=None, debugging=False):
         if debugging:
-            print(f"Plyer took -{damage}hp from {source}")
+            print(f"INFO: Player took -{damage}hp from {source}")
         self.sfx.play(DAMAGE, debugging=debugging)
         self.health -= damage
         self.particles.add_particles([self.player.pos[0] + self.player.size[0] / 2, self.player.pos[1] + self.player.size[1] / 2], BLOOD, multiplier=2)

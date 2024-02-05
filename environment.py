@@ -39,7 +39,7 @@ class Environment:
         self.light_sources = [[], []]
         self.particles = [Particles(self.window, self.spritesheet, (0, 0), 5), Particles(self.window, self.spritesheet, (0, 0), 5)]
 
-        self.time = 7000
+        self.time = 1000
         self.time_direction = 1
         self.time_acceleration = .1
         self.light_filter = pygame.surface.Surface(self.window.size)
@@ -58,7 +58,7 @@ class Environment:
     def generate_cave(self, size: Tuple[int, int] = (10, 10), has_stairs: bool=False):
         cave = []
         placed_stair = False
-        x_range = [int(-size[1] / 2), 6]
+        x_range = [int(-size[1] / 2), random.randint(5, 13)]
 
         for i in range(int(-size[0] / 2), int(size[0] / 2)):
             y = i
@@ -70,7 +70,6 @@ class Environment:
                 
                 block_type = CAVE_DIRT
                 collide = False
-                print(x, y, x_range, y, int(size[1] / 2))
                 if x == x_range[0] or y == int(-size[1] / 2) or x >= x_range[0] + x_range[1] - 2 or y >= int(size[1] / 2) - 2:
                     block_type = CAVE_STONE_2
                     collide = True
@@ -82,8 +81,6 @@ class Environment:
             if i < 0:
                 x_range[1] += random.randint(0, 1)
                 x_range[0] += random.randint(0, 1)
-                #if x_range[1] > 10:
-                #    x_range[1] = 9
             else:
                 x_range[1] += random.randint(-1, 0)
                 x_range[0] += random.randint(-1, 0)
@@ -136,7 +133,7 @@ class Environment:
                                     self.add_rect(pos, GRASS_2)
                                 elif random.random() > 0.95:
                                     self.add_rect(pos, BUSH)
-                                elif random.random() > 0.95:
+                                elif random.random() > 0.999:
                                     self.add_rect(pos, STAIRSET)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
@@ -199,7 +196,7 @@ class Environment:
                 if entity.health <= 0:
                     if entity.special_item is not None:
                         self.ground_items[self.cave_level].append(Item(self.window, self.spritesheet, entity.enemy.pos, entity.special_item))
-                    self.entities.remove(entity)
+                    self.entities[self.cave_level].remove(entity)
                     self.selected_entity = None
                     self.player.selected_entity = None
                     self.player.add_xp(2)
@@ -213,7 +210,7 @@ class Environment:
 
             self.particles[self.cave_level].draw()
         else:
-            self.draw_underground(offset=self.player.underground_offset)
+            self.draw_underground(offset=offset)
 
         for block in self.special_blocks[self.cave_level]:
                 block.draw(offset, underground=self.cave_level==1)
@@ -232,7 +229,6 @@ class Environment:
         for text in self.floating_texts[self.cave_level]:
             text.draw(self.window.get())
             text.loop()
-
             if time.time() - text.time > text.fadeout:
                 self.floating_texts[self.cave_level].remove(text)
 
@@ -255,13 +251,12 @@ class Environment:
                 if block.collidable or block.texture_id in BLOCK_COLLIDABLE:
                     self.player.check_collision(block)
                 if block.texture_id == STAIRSET:
-                    if block.collide_rect(self.player.collider_middle.rect, offset=offset):
+                    if block.collide_rect(self.player.player.rect, offset=offset) and time.time() - self.player.last_cave_level_change > 0.1:
+                        self.player.last_cave_level_change = time.time()
                         self.cave_level = 0
                         self.player.underground = False
                 if block.collide_rect(self.player.colliders[1].rect, offset=offset):
                     self.player_floor_block = block
-                
-
         
         self.window.get().blit(self.underground_light_filter, (0, 0), special_flags=pygame.BLEND_RGBA_SUB)
 
@@ -298,7 +293,8 @@ class Environment:
                         block.set_texture(self.spritesheet.image(DOOR_CLOSED))
                         block.texture_id = DOOR_CLOSED
                 if block.texture_id == STAIRSET:
-                    if block.collide_rect(self.player.player.rect, offset=offset):
+                    if block.collide_rect(self.player.player.rect, offset=offset) and time.time() - self.player.last_cave_level_change > 0.1:
+                        self.player.last_cave_level_change = time.time()
                         self.cave_level = 1
                         self.player.underground = True
                 if block.collide_rect(self.player.colliders[1].rect, offset=offset):
@@ -349,15 +345,15 @@ class Environment:
         self.particles[self.cave_level].loop(0.8)
         self.player.loop(dt, self.player_floor_block, debugging=debugging)
 
-        if random.random() > .998:
+        if random.random() > .999 and self.time > 4000:
             pos = self.window.random_in_boundaries()
             if debugging:
-                print(f"Spawned zombie at {pos} + {self.player.offset} = ({pos[0] + self.player.offset[0]}, {pos[1] + self.player.offset[1]})")
+                print(f"INFO: Spawned zombie at {pos} + {self.player.offset} = ({pos[0] + self.player.offset[0]}, {pos[1] + self.player.offset[1]})")
             self.entities[self.cave_level].append(Zombie(self.window, self.spritesheet, self.sfx, pos, self.sprite_size))
 
         for block in self.player.blocks_to_remove:
             if debugging:
-                print(f"Removing block {block}")
+                print(f"INFO: Removing block {block}")
             arr = self.map
             if self.cave_level == 1:
                 arr = self.underground
@@ -378,7 +374,7 @@ class Environment:
                 self.player.blocks_to_remove.remove(block)
         for block in self.player.blocks_to_add:
             if debugging:
-                print(f"Adding block {block}")
+                print(f"INFO: Adding block {block}")
             if isinstance(self.selected_block, Campfire):
                 if block[0] != CLAY:
                     self.player.inventory.add_item((block[0], 1))
@@ -396,12 +392,12 @@ class Environment:
             elif block[0] in LIGHT_BLOCKS:
                 self.light_sources[self.cave_level].append(LightSource(self.window, self.selected_block.center, 3, color=(255, 226, 110)))
                 if block[0] == CAMPFIRE_1:
-                    self.special_blocks[self.cave_level].append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size, underground=True))
+                    self.special_blocks[self.cave_level].append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
                     self.floating_texts[self.cave_level].append(FloatingText(self.font, "New Beggining", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 10), (0, 0.2)))
                     self.floating_texts[self.cave_level].append(FloatingText(self.font, "+1", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 30), (0, 0.2)))
                     self.player.add_xp(1)
                 elif block[0] == TORCH:
-                    self.special_blocks[self.cave_level].append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "TORCH", self.window.get(), self.spritesheet.image(TORCH, size=(self.sprite_size, self.sprite_size), underground=True)))
+                    self.special_blocks[self.cave_level].append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "TORCH", self.window.get(), self.spritesheet.image(TORCH, size=(self.sprite_size, self.sprite_size))))
             self.particles[self.cave_level].add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
             self.sfx.play(PLACE_BLOCK, debugging=debugging)
             self.player.blocks_to_add.remove(block)

@@ -21,6 +21,11 @@ class Window:
         self.clock = pygame.time.Clock()
 
     
+    def set_ico(self, ico_name):
+        icon = pygame.image.load(ico_name)
+        pygame.display.set_icon(icon)
+
+    
     def draw_start(self):
         self.delta_time = self.clock.tick(self.fps)
         self.window.fill(self.background_color)
@@ -29,6 +34,10 @@ class Window:
     def draw_end(self):
         pygame.display.flip()
 
+        if self.get_fps() > 60 and self.get_fps() < 120 and self.fps != 60:
+            print(f"INFO: Set FPS cap to 60 (from {self.fps})")
+            self.fps = 60
+            
 
     def get(self):
         return self.window

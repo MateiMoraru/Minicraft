@@ -12,6 +12,7 @@ class Spritesheet(object):
         except pygame.error as message:
             print('Failed to load spritesheet:', filename)
             print(message)
+        print("INFO: Spritesheet loaded correctly")
         
 
     def image_at(self, rectangle, colorkey = None):
