@@ -1,3 +1,3 @@
 # Minicraft
 
-![Salut](assets/Screenshot_8.png)
+![Salut](assets/Screenshot_7.png)
