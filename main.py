@@ -57,12 +57,12 @@ class Main:
 
 
     def run(self):
-        try:
-            self.loop()
-            self.quit(0)
-        except Exception as e:
-            print(f"Encountered error: {e}")
-            self.quit(-1)
+       # try:
+        self.loop()
+        self.quit(0)
+        #except Exception as e:
+        #    print(f"Encountered error: {e}")
+        #    self.quit(-1)
 
 
     def loop(self):

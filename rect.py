@@ -3,6 +3,7 @@ from typing import *
 import pygame
 
 class Rect:
+    __type__ = "RECT"
     def __init__(self, pos:Tuple[float], size:Tuple[float], color:Tuple[int], type:str, window:pygame.Surface, texture:pygame.Surface=None, collidable:bool=False, texture_id:int=None, underground=False):
         self.pos = pos
         self.size = size

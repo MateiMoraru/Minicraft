@@ -265,3 +265,5 @@ class Player:
                 self.health += dhealth
             self.sfx.play(EAT)
             self.inventory.remove_current_item(1)
+        elif self.selected_block.__type__ == "CHEST":
+            self.selected_block.opened = True

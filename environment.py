@@ -1,6 +1,7 @@
 import random
 import pygame
 from campfire import Campfire
+from chest import Chest
 from enemy import Enemy
 from item import Item
 from player import Player
@@ -23,6 +24,7 @@ class Environment:
         self.sprite_size = 64
         self.map = []
         self.underground = []
+        self.special_blocks = [[], []]
         print("\tGenerating map...")
         self.cave_level = 0
         self.generate_map()
@@ -35,7 +37,6 @@ class Environment:
         self.sfx = sfx
 
         self.ground_items = [[], []]
-        self.special_blocks = [[], []]
         self.light_sources = [[], []]
         self.particles = [Particles(self.window, self.spritesheet, (0, 0), 5), Particles(self.window, self.spritesheet, (0, 0), 5)]
 
@@ -50,6 +51,7 @@ class Environment:
         self.entities = [[], []]
 
         self.floating_texts = [[], []]
+
 
     
     def generate_underground(self):
@@ -135,6 +137,9 @@ class Environment:
                                     self.add_rect(pos, BUSH)
                                 elif random.random() > 0.999:
                                     self.add_rect(pos, STAIRSET)
+                                elif random.random() > 0.99:
+                                    self.special_blocks[0].append(Chest(self.window, self.spritesheet, pos, (self.sprite_size, self.sprite_size)))
+                                    self.special_blocks[0][-1].set_random(1)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
                             self.add_rect(pos, WATER_BLOCK_1)
@@ -213,13 +218,19 @@ class Environment:
             self.draw_underground(offset=offset)
 
         for block in self.special_blocks[self.cave_level]:
-                block.draw(offset, underground=self.cave_level==1)
-                if isinstance(block, Campfire):
+                if block.__type__ == "CHEST":
+                    block.draw(offset, self.player.inventory)
+                    if block.rect.collide_point(pygame.mouse.get_pos(), offset=offset):
+                        self.selected_block = block
+                        self.player.selected_block = block
+                elif block.__type__ == "CAMPFIRE":
+                    block.draw(offset, underground=self.cave_level==1)
                     if block.campfire.collide_rect(self.player.player.rect, offset=offset):
                         if random.random() > 0.99:
                             self.player.harm(1, "FIRE")
                     if block.campfire.collide_point(pygame.mouse.get_pos(), offset=offset):
                         self.selected_block = block
+                        self.player.selected_block = block
                     
                     for cooked in block.cooked:
                         self.ground_items.append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), BRICK))

@@ -9,6 +9,7 @@ from animation import Animation
 from particles import Particles
 
 class Campfire:
+    __type__ = "CAMPFIRE"
     def __init__(self, window: Window, spritesheet: Spritesheet, pos: Tuple[int, int], size: Tuple[int, int], underground: bool=False):
         self.window = window
         self.spritesheet = spritesheet
