@@ -14,7 +14,7 @@ from sfx_manager import *
 from text import *
 
 class Player:
-    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.font, font2: pygame.font, sfx: SFX):
         self.window = window
         self.spritesheet = spritesheet
         self.sfx = sfx
@@ -233,6 +233,7 @@ class Player:
 
     def attack(self):
         current_tool = self.inventory.item
+        current_tool_type = ID_STR(current_tool[0])
 
         if self.selected_entity is not None:
             self.selected_entity.harm(self.current_damage)
@@ -242,12 +243,17 @@ class Player:
             if type == "GRASS_BLOCK" and current_tool[0] == SHOVEL:
                 self.blocks_to_remove.append(self.selected_block)
                 self.blocks_to_add.append([GRASS_BLOCK_DUG, 0])
-                return
-                
+                #return?? why was return here
+
             for tool in BLOCK_BREAKING:
-                if ID_STR(current_tool[0]) == tool or tool == "ANY":
+                if current_tool_type == tool or tool == "ANY":
                     if type in BLOCK_BREAKING[tool]:
                         self.blocks_to_remove.append(self.selected_block)
+            if current_tool_type == None:
+                return
+            if random.random() > TOOL_BREAK_CHANCE[current_tool_type]:
+                self.inventory.remove_current_item()
+                print(f"INFO: ITEM BROKE! chance: {TOOL_BREAK_CHANCE[current_tool_type]}")
 
 
     def place(self):

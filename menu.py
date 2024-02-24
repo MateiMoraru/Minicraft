@@ -38,8 +38,8 @@ class Menu:
             button.loop()
 
     
-    def add_buttons(self, onclick, font:pygame.Font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), text:str="", text_color:tuple=(0, 0, 0)):
+    def add_buttons(self, onclick, font:pygame.font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), text:str="", text_color:tuple=(0, 0, 0)):
         self.buttons.append(Button(onclick, self.window, self.window_size, font, pos, size, color, (79, 88, 92, 255), text, text_color))
 
-    def add_text(self, font:pygame.Font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), text:str=""):
+    def add_text(self, font:pygame.font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), text:str=""):
         self.text.append(Text(font, text, color, pos))

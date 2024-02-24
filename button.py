@@ -4,7 +4,7 @@ from rect import rect
 from text import Text
 
 class Button:
-    def __init__(self, onclick, window:pygame.Surface, window_size:Tuple[int, int], font:pygame.Font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), color_hover:Tuple[int, int, int, int]=(79, 88, 92, 255), text:str="", text_color:tuple=(0, 0, 0)):
+    def __init__(self, onclick, window:pygame.Surface, window_size:Tuple[int, int], font:pygame.font, pos:List[int], size:List[int], color:Tuple[int, int, int, int]=(111, 123, 128, 255), color_hover:Tuple[int, int, int, int]=(79, 88, 92, 255), text:str="", text_color:tuple=(0, 0, 0)):
         self.onclick = onclick
         self.window = window
         self.window_size = window_size

@@ -6,7 +6,7 @@ from animation import Animation
 from player import Player
 from window import Window
 from spritesheet import *
-from rect import Rect
+from rect import *
 from sfx_manager import *
 from particles import Particles
 
@@ -62,6 +62,11 @@ class Enemy:
     def loop(self, player:Player, offset: Tuple[int, int]=(0, 0)):
         self.update_colliders(offset)
         self.particles.loop(.9)
+
+        dist = dist_block(self.enemy.center, player.player, offset)
+        if dist > 4 * player.player.size[0]:
+            return
+
         player_dx = player.player.pos[0] - (self.enemy.pos[0] + offset[0])
         if player_dx != 0:
             player_dx /= abs(player_dx)

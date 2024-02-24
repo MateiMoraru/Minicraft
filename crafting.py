@@ -7,7 +7,7 @@ from rect import Rect, collide_point
 from spritesheet import *
 
 class Crafting:
-    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.font):
         self.window = window
         self.spritesheet = spritesheet
         self.spritesheet_ui = spritesheet_ui

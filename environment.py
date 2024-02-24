@@ -15,7 +15,7 @@ from zombie import Zombie
 from text import *
 
 class Environment:
-    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font, font2: pygame.Font, sfx: SFX):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.font, font2: pygame.font, sfx: SFX):
         self.window = window
         self.spritesheet = spritesheet 
         self.spritesheet_ui = spritesheet_ui
@@ -233,7 +233,8 @@ class Environment:
                         self.player.selected_block = block
                     
                     for cooked in block.cooked:
-                        self.ground_items.append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), BRICK))
+                        result = COOK_RESULT[ID_STR(cooked)] 
+                        self.ground_items.append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), result))
                         block.cooked.remove(cooked)
         
         self.player.draw()
@@ -387,7 +388,7 @@ class Environment:
             if debugging:
                 print(f"INFO: Adding block {block}")
             if isinstance(self.selected_block, Campfire):
-                if block[0] != CLAY:
+                if block[0] not in COOKABLE_ITEMS:
                     self.player.inventory.add_item((block[0], 1))
                     self.player.blocks_to_add.remove(block)
                     return

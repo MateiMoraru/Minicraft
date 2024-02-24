@@ -6,7 +6,7 @@ from spritesheet import *
 from text import Text
 
 class Inventory:
-    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.Font):
+    def __init__(self, window: Window, spritesheet: Spritesheet, spritesheet_ui: Spritesheet, font: pygame.font):
         self.window = window
         self.spritesheet = spritesheet
         self.spritesheet_ui = spritesheet_ui
@@ -16,7 +16,7 @@ class Inventory:
         self.hotbar_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_dark_texture = self.spritesheet_ui.image(UI_HOTBAR_ITEM_DARK, size=(self.hotbar_item_size, self.hotbar_item_size))
         self.hotbar_length = 5
-        self.hotbar = [[AXE, 1], [PICAXE, 1], [SHOVEL, 1], [CAMPFIRE_1, 1], [TORCH, 1]]
+        self.hotbar = [[STONE_AXE, 1], [STONE_PICKAXE, 1], [CRAFTING_TABLE, 1], [CAMPFIRE_1, 1], [TORCH, 1]]
         self.selected_hotbar_slot = 0
         self.selected_hotbar_inventory_slot = 0
 
