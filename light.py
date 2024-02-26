@@ -3,7 +3,7 @@ import pygame
 from window import Window
 from rect import *
 class LightSource:
-    def __init__(self, window: Window, pos: Tuple[int, int], range: int, color: Tuple[int, int, int]=(255, 255, 255), max_intensity: int=255):
+    def __init__(self, window: Window, pos: Tuple[int, int], range: int, color: Tuple[int, int, int]=(255, 255, 255), max_intensity: int=200):
         self.window = window
         self.pos = pos
         self.intensity = max_intensity / range

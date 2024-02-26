@@ -251,7 +251,8 @@ class Environment:
                         result = COOK_RESULT[ID_STR(cooked[0])]
                         self.ground_items[self.cave_level].append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), result))
                         block.cooked.remove(cooked)
-        
+                else:
+                    block.draw(offset, underground=self.cave_level==1)
         self.player.draw()
         for text in self.floating_texts[self.cave_level]:
             text.draw(self.window.get())
@@ -290,17 +291,21 @@ class Environment:
     
     def draw_map(self, offset):
         changed_water_tex = False
+        light_blocks = []
+
         for block in self.map:
             if self.in_boundaries(block, offset):
                 block.draw(offset=offset)
                 
                 for light_source in self.light_sources[0]:
-                    if light_source.in_range(block):
+                    if light_source.in_range(block) and block.pos not in light_blocks:
                         light_source.draw(block, offset)
-                
+                        light_blocks.append(block.pos)
+
                 if self.player.produce_light:
-                    if self.player.light.in_range(block):
+                    if self.player.light.in_range(block) and block.pos not in light_blocks:
                         self.player.light.draw(block, offset)
+                        light_blocks.append(block.pos)
                 
                 if block.texture_id == GRASS_BLOCK_DUG:
                     if random.random() > 0.999:
@@ -387,6 +392,8 @@ class Environment:
                 print(f"INFO: Spawned zombie at {pos} + {self.player.offset} = ({pos[0] + self.player.offset[0]}, {pos[1] + self.player.offset[1]})")
             self.entities[self.cave_level].append(Zombie(self.window, self.spritesheet, self.sfx, pos, self.sprite_size))
 
+
+        ### Check player remove block from map
         for block in self.player.blocks_to_remove:
             if debugging:
                 print(f"INFO: Removing block {block}")
@@ -408,6 +415,8 @@ class Environment:
                 self.sfx.play(HIT_BLOCK, debugging=debugging)
                 arr.remove(block)
                 self.player.blocks_to_remove.remove(block)
+
+        ### Check player add block to map
         for block in self.player.blocks_to_add:
             if debugging:
                 print(f"INFO: Adding block {block}")
@@ -426,14 +435,24 @@ class Environment:
                 else:
                     self.underground.append(rect)
             elif block[0] in LIGHT_BLOCKS:
-                self.light_sources[self.cave_level].append(LightSource(self.window, self.selected_block.center, 3, color=(255, 226, 110)))
+                if block[0] == TORCH:
+                    light_range = 3 
+                elif block[0] == CAMPFIRE_1:
+                    light_range = 4
+
+                self.light_sources[self.cave_level].append(LightSource(self.window, self.selected_block.center, light_range, color=(255, 226, 110)))
                 if block[0] == CAMPFIRE_1:
                     self.special_blocks[self.cave_level].append(Campfire(self.window, self.spritesheet, self.selected_block.pos, self.selected_block.size))
                     self.floating_texts[self.cave_level].append(FloatingText(self.font, "New Beggining", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 10), (0, 0.2)))
                     self.floating_texts[self.cave_level].append(FloatingText(self.font, "+1", (198, 169, 212), (self.player.player.center[0], self.player.player.pos[1] - 30), (0, 0.2)))
                     self.player.add_xp(1)
                 elif block[0] == TORCH:
-                    self.special_blocks[self.cave_level].append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "TORCH", self.window.get(), self.spritesheet.image(TORCH, size=(self.sprite_size, self.sprite_size))))
-            self.particles[self.cave_level].add_particles((self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0], self.selected_block.center[1] + self.player.offset[1]), block[0])
+                    sprite = self.spritesheet.image(TORCH, size=(self.sprite_size, self.sprite_size))
+                    self.special_blocks[self.cave_level].append(Rect(self.selected_block.pos, self.selected_block.size, (0, 0, 0), "TORCH", self.window.get(),sprite))
+            
+            particle_pos = (self.selected_block.center[0] + self.selected_block.size[0] / 2 + self.player.offset[0],
+                            self.selected_block.center[1] + self.player.offset[1])
+            self.particles[self.cave_level].add_particles(particle_pos, block[0])
+            
             self.sfx.play(PLACE_BLOCK, debugging=debugging)
             self.player.blocks_to_add.remove(block)
