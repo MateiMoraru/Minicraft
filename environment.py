@@ -159,6 +159,7 @@ class Environment:
                     block_id = WATER_BLOCK_1
                     self.add_rect(pos, block_id)
 
+
     def add_rect(self, pos: Tuple[int, int], texture_id: int, coll: bool=False, add_to_map: bool=True):
         size = (self.sprite_size, self.sprite_size)
         color = (0, 0, 0)
@@ -233,8 +234,11 @@ class Environment:
                         self.player.selected_block = block
                     
                     for cooked in block.cooked:
-                        result = COOK_RESULT[ID_STR(cooked)] 
-                        self.ground_items.append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), result))
+                        if cooked[0] == -1:
+                            block.cooked.remove(cooked)
+                            break
+                        result = COOK_RESULT[ID_STR(cooked[0])]
+                        self.ground_items[self.cave_level].append(Item(self.window, self.spritesheet, (block.campfire.center[0] + random.uniform(-1.5, 1.5) * self.sprite_size, block.campfire.center[1] + random.uniform(-1.5, 1.5) * self.sprite_size), result))
                         block.cooked.remove(cooked)
         
         self.player.draw()
@@ -392,7 +396,7 @@ class Environment:
                     self.player.inventory.add_item((block[0], 1))
                     self.player.blocks_to_add.remove(block)
                     return
-                self.selected_block.add_to_fire(self.player.inventory.item[0])
+                self.selected_block.add_to_fire(block[0])
                 self.player.blocks_to_add.remove(block)
                 return
             if not block[0] in SPECIAL_BLOCKS and block[0] in BLOCK_PLACABLE:

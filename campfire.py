@@ -19,6 +19,7 @@ class Campfire:
         self.particles = Particles(self.window, self.spritesheet, pos, 5, -0.1, 0.5, underground=underground)
         self.particles.no_gravity()
 
+        self.texture_id = CAMPFIRE_1
         self.cooking = []
         self.cooked = []
 
@@ -37,4 +38,5 @@ class Campfire:
                 self.cooking.remove(item)
 
     def add_to_fire(self, item: int):
+        print(item)
         self.cooking.append([item, time.time()])

@@ -235,6 +235,8 @@ class Player:
         current_tool = self.inventory.item
         current_tool_type = ID_STR(current_tool[0])
 
+        used_tool = False
+
         if self.selected_entity is not None:
             self.selected_entity.harm(self.current_damage)
             return ("ENTITY", self.current_damage)
@@ -243,15 +245,18 @@ class Player:
             if type == "GRASS_BLOCK" and current_tool[0] == SHOVEL:
                 self.blocks_to_remove.append(self.selected_block)
                 self.blocks_to_add.append([GRASS_BLOCK_DUG, 0])
+                used_tool = True
+
                 #return?? why was return here
 
             for tool in BLOCK_BREAKING:
                 if current_tool_type == tool or tool == "ANY":
                     if type in BLOCK_BREAKING[tool]:
                         self.blocks_to_remove.append(self.selected_block)
-            if current_tool_type == None:
+                        used_tool = True
+            if current_tool_type == None or current_tool_type not in ID_STR(current_tool[0]):
                 return
-            if random.random() > TOOL_BREAK_CHANCE[current_tool_type]:
+            if used_tool and random.random() > TOOL_BREAK_CHANCE[current_tool_type]:
                 self.inventory.remove_current_item()
                 print(f"INFO: ITEM BROKE! chance: {TOOL_BREAK_CHANCE[current_tool_type]}")
 
@@ -262,7 +267,8 @@ class Player:
             self.inventory.remove_current_item(1)
         elif self.selected_block.texture_id == CRAFTING_TABLE:
             return "CRAFT"
-        elif self.inventory.item[0] == CLAY:
+        elif self.inventory.item[0] in COOKABLE_ITEMS:
+            print(self.inventory.item)
             self.blocks_to_add.append(self.inventory.item)
             self.inventory.remove_current_item(1)
         elif self.inventory.item[0] in FRUIT:

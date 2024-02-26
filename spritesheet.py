@@ -43,6 +43,8 @@ class Spritesheet(object):
                 for x in range(image_count)]
         return self.images_at(tups, colorkey)
     
+
+### GAME TEXTURES: 
 GRASS_BLOCK = 0
 SAND_BLOCK = 1
 WATER_BLOCK_1 = 2
@@ -85,6 +87,8 @@ BRICK = 38
 BRICK_BLOCK = 39
 BLUEBERRY = 40
 STRAWBERRY = 41
+IRON_INGOT = 42
+GOLD_INGOT = 43
 GOLD_NUGGET = 46
 BANANA = 47
 CRAFTING_TABLE = 48
@@ -117,16 +121,16 @@ ZOMBIE_UP_1 = 89
 ZOMBIE_UP_2 = 90
 ZOMBIE_UP_3 = 91
 
-# Add ingot textures
-IRON_INGOT = None
-GOLD_INGOT = None
-
+### UI SPRITESHEET: 
 UI_HOTBAR_ITEM = 0
 UI_HOTBAR_ITEM_DARK = 1
 UI_INVENTORY_ITEM = 2
 UI_INVENTORY_ITEM_DARK = 3
 UI_HEART = 4
 UI_XP_BAR = 5
+
+
+### GLOBAL TEXTURE-RELATED DICTS AND LISTS:
 
 FRUIT = [
     BANANA,
@@ -140,11 +144,19 @@ FRUIT_HEALTH = {
     "BLUEBERRY": 1
 }
 
+TOOLS = [
+    "AXE",
+    "PICKAXE",
+    "STONE_AXE",
+    "STONE_PICKAXE",
+    "SHOVEL"
+]
+
 BLOCK_BREAKING = {
     "ANY": ["GRASS_1", "GRASS_2", "FLOWER_1", "TORCH"],
     "AXE": ["TREE_1", "CRAFTING_TABLE", "PLANK_BLOCK", "PLANK_FLOOR", "DOOR_CLOSED", "CAMPFIRE_1"],
     "STONE_AXE": ["TREE_1", "CRAFTING_TABLE", "PLANK_BLOCK", "PLANK_FLOOR", "DOOR_CLOSED"],
-    "STONE_PICKAXE": ["ROCK_1"],
+    "STONE_PICKAXE": ["ROCK_1", "ROCK_IRON"],
     "PICKAXE": ["ROCK_1", "ROCK_IRON", "BRICK_BLOCK"]
 }
 
@@ -291,10 +303,18 @@ ITEM_ID = {
     CAVE_DIRT: "CAVE_DIRT",
     CAVE_STONE_1: "CAVE_STONE_1",
     CAVE_STONE_2: "CAVE_STONE_2",
+    IRON_ORE: "IRON_ORE",
+    GOLD_NUGGET: "GOLD_NUGGET",
+    IRON_INGOT: "IRON_INGOT",
+    GOLD_INGOT: "GOLD_INGOT"
 }
 
 def ID_STR(id: int):
-    if id in ITEM_ID:
-        for item in ITEM_ID:
-            if item == id:
-                return ITEM_ID[item]
+    try:
+        if id in ITEM_ID:
+            for item in ITEM_ID:
+                if item == id:
+                    return ITEM_ID[item]
+    except KeyError:
+        print(f"ERROR: KeyError occured whilst looking for ID: {id}. No existing item with that ID!")
+        return None
