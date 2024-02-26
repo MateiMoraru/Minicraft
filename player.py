@@ -101,7 +101,7 @@ class Player:
         self.inventory.draw()
         self.draw_health()
         self.draw_xp_bar()
-        self.draw_colliders()
+        #self.draw_colliders()
 
 
     def draw_xp_bar(self):
@@ -268,7 +268,6 @@ class Player:
         elif self.selected_block.texture_id == CRAFTING_TABLE:
             return "CRAFT"
         elif self.inventory.item[0] in COOKABLE_ITEMS:
-            print(self.inventory.item)
             self.blocks_to_add.append(self.inventory.item)
             self.inventory.remove_current_item(1)
         elif self.inventory.item[0] in FRUIT:
@@ -279,3 +278,4 @@ class Player:
             self.inventory.remove_current_item(1)
         elif self.selected_block.__type__ == "CHEST":
             self.selected_block.opened = True
+            print(self.selected_block.rarity)

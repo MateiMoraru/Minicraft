@@ -139,7 +139,14 @@ class Environment:
                                     self.add_rect(pos, STAIRSET)
                                 elif random.random() > 0.99:
                                     self.special_blocks[0].append(Chest(self.window, self.spritesheet, pos, (self.sprite_size, self.sprite_size)))
-                                    self.special_blocks[0][-1].set_random(1)
+                                    
+                                    chest_rarity = 0
+                                    if random.random() > 0.9:
+                                        chest_rarity = 2
+                                    elif random.random() > 0.6:
+                                        chest_rarity = 1
+
+                                    self.special_blocks[0][-1].set_random(chest_rarity)
                     elif water is not None:
                         if dist_point(pos, (water[0], water[1])) < water[2] * self.sprite_size:
                             self.add_rect(pos, WATER_BLOCK_1)
@@ -220,6 +227,10 @@ class Environment:
 
         for block in self.special_blocks[self.cave_level]:
                 if block.__type__ == "CHEST":
+                    if block.opened:
+                        d = dist_block(self.player.player.center, block.rect, offset)
+                        if d > 4 * self.sprite_size:
+                            block.opened = False
                     block.draw(offset, self.player.inventory)
                     if block.rect.collide_point(pygame.mouse.get_pos(), offset=offset):
                         self.selected_block = block
@@ -282,37 +293,46 @@ class Environment:
         for block in self.map:
             if self.in_boundaries(block, offset):
                 block.draw(offset=offset)
+                
                 for light_source in self.light_sources[0]:
                     if light_source.in_range(block):
                         light_source.draw(block, offset)
+                
                 if self.player.produce_light:
                     if self.player.light.in_range(block):
                         self.player.light.draw(block, offset)
+                
                 if block.texture_id == GRASS_BLOCK_DUG:
                     if random.random() > 0.999:
                         block.set_texture(self.spritesheet.image(GRASS_BLOCK))
+                
                 if block.texture_id == BUSH:
                     if random.random() > 0.999:
                         self.ground_items[self.cave_level].append(Item(self.window, self.spritesheet, (block.pos[0] + random.uniform(-1, 1) * block.size[0], block.pos[1] + random.uniform(-1, 1 * block.size[1])), FRUIT[random.randint(0, len(FRUIT) - 1)]))
+                
                 if block.collidable or block.texture_id in BLOCK_COLLIDABLE or block.texture_id in ENEMY_COLLIDABLE:
                     if not block.texture_id in ENEMY_COLLIDABLE and block.texture_id in BLOCK_COLLIDABLE:
                         self.player.check_collision(block)
                     elif block.texture_id in ENEMY_COLLIDABLE + BLOCK_COLLIDABLE:
                         for entity in self.entities[self.cave_level]:
                             entity.check_collision(block, offset=offset)
+                
                 if block.texture_id == DOOR_CLOSED:
                     if block.collide_rect(self.player.player.rect, offset=offset):
                         block.set_texture(self.spritesheet.image(DOOR_OPENED))
                         block.texture_id = DOOR_OPENED
+                
                 if block.texture_id == DOOR_OPENED:
                     if not block.collide_rect(self.player.player.rect, offset=offset):
                         block.set_texture(self.spritesheet.image(DOOR_CLOSED))
                         block.texture_id = DOOR_CLOSED
+                
                 if block.texture_id == STAIRSET:
                     if block.collide_rect(self.player.player.rect, offset=offset) and time.time() - self.player.last_cave_level_change > 0.1:
                         self.player.last_cave_level_change = time.time()
                         self.cave_level = 1
                         self.player.underground = True
+                
                 if block.collide_rect(self.player.colliders[1].rect, offset=offset):
                     self.player_floor_block = block
 

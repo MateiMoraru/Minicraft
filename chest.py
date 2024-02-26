@@ -25,7 +25,8 @@ class Chest:
         self.length = 8
 
         self.rect = Rect(pos, size, (0, 0, 0), "CHEST", self.window.get(), self.texture, True, CHEST_CLOSED)
-        
+        self.rarity = -1
+
         self.opened = False
 
         self.selected_chest_slot = 0
@@ -34,6 +35,7 @@ class Chest:
             self.items.append([-1, -1])
 
     def draw(self, offset: Tuple[int, int], inventory: Inventory, underground: bool=False):
+        self.center = self.rect.center
         self.selected_chest_slot = None
         self.rect.draw(offset, underground)
 
@@ -81,16 +83,17 @@ class Chest:
 
     #rarity: 0(bad), 1(ok), 2(super rare)
     def set_random(self, rarity: int = 1):
+        self.rarity = rarity
         items = CHEST_RANDOMIZER[rarity]
         for item in items:
-            if random.random() > 0.2 * rarity:
+            if random.random() > 0.5 * rarity / 3:
                 idx = random.randint(0, 63)
                 while self.items[idx][0] != -1:
                     idx = random.randint(0, 64)
                 self.items[idx] = [item[0], random.randint(1, item[1])]
 
 CHEST_RANDOMIZER = [
-    [[COAL, 12], [STRAWBERRY, 12], [IRON_ORE, 5], [STONE, 10], [CLAY, 16], [TORCH, 16]],
     [[BANANA, 16], [GOLD_NUGGET, 10], [TORCH, 32], [IRON_ORE, 10]],
-    []
+    [[COAL, 12], [STRAWBERRY, 12], [IRON_ORE, 5], [STONE, 10], [CLAY, 16], [TORCH, 16], [STONE_AXE, 2], [STONE_PICKAXE, 3]],
+    [[AXE, 2], [PICKAXE, 3], [IRON_INGOT, 20], [GOLD_INGOT, 20]]
 ]
