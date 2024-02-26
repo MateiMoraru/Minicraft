@@ -40,7 +40,7 @@ class Environment:
         self.light_sources = [[], []]
         self.particles = [Particles(self.window, self.spritesheet, (0, 0), 5), Particles(self.window, self.spritesheet, (0, 0), 5)]
 
-        self.time = 1000
+        self.time = 8000
         self.time_direction = 1
         self.time_acceleration = .1
         self.light_filter = pygame.surface.Surface(self.window.size)

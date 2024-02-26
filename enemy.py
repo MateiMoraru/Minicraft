@@ -20,6 +20,7 @@ class Enemy:
         self.enemy = Rect(pos, (size, size), (0, 0, 0), name, window.get(), self.default_texture)
         self.direction = "stand"
         self.speed = 0.1
+        self.idle = False
         self.health = 10
         if texture_id == ZOMBIE:
             self.damage_sound = ZOMBIE_DIE
@@ -53,7 +54,32 @@ class Enemy:
         self.colliders[3] = collider_right
         self.collider_middle = collider_middle
 
-    
+   
+    def idle_animation(self):
+        stances = ["up", "down", "left", "right"]
+        move = [0, 0]
+
+        if random.random() > 0.99:
+            self.direction = stances[random.randint(0, 3)]
+
+        if self.direction == "up" and not self.collided[0]:
+            move[1] = -1 * self.speed * self.window.delta_time
+        elif self.direction == "down" and not self.collided[1]:
+            move[1] = 1 * self.speed * self.window.delta_time
+        elif self.direction == "left" and not self.collided[2]:
+            move[0] = -1 * self.speed * self.window.delta_time
+        elif self.direction == "right" and not self.collided[3]:
+            move[0] = 1 * self.speed * self.window.delta_time
+
+        print(self.direction, move[0] / self.window.delta_time, move[1] / self.window.delta_time)
+
+        self.enemy.move(move[0], move[1])
+        self.animation()
+        
+        if (self.direction != "stand" and random.random() > 0.99) or (move[0] == 0 and move[1] == 0):
+            self.direction = "stand"
+
+
     def draw(self, offset: Tuple[int, int]=(0, 0)):
         self.enemy.draw(offset)
         self.particles.draw(offset)
@@ -63,10 +89,12 @@ class Enemy:
         self.update_colliders(offset)
         self.particles.loop(.9)
 
-        dist = dist_block(self.enemy.center, player.player, offset)
-        if dist > 4 * player.player.size[0]:
-            return
+        dist = dist_block(player.player.center, self.enemy, offset)
+        self.idle =  dist > 4 * player.player.size[0]
 
+        if self.idle:
+            self.idle_animation()
+            return
         player_dx = player.player.pos[0] - (self.enemy.pos[0] + offset[0])
         if player_dx != 0:
             player_dx /= abs(player_dx)
@@ -97,6 +125,13 @@ class Enemy:
             move[1] = 0
 
         self.enemy.move(move[0], move[1])
+        self.animation()
+
+        self.collided = [False, False, False, False]
+        self.attack(player)
+
+
+    def animation(self):
 
         if self.direction == "stand":
             self.enemy.set_texture(self.default_texture)
@@ -110,9 +145,6 @@ class Enemy:
             elif self.direction == "up":
                 frame = self.animation_up.get
             self.enemy.set_texture(frame)
-        self.collided = [False, False, False, False]
-
-        self.attack(player)
 
 
     def attack(self, player: Player, damage: int=1):
