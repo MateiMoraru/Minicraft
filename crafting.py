@@ -13,7 +13,8 @@ class Crafting:
         self.spritesheet_ui = spritesheet_ui
         self.font = font
 
-        self.size = 25
+        self.start_index = 0
+        self.size = 40
         self.hotbar_texture = self.spritesheet_ui.image(UI_INVENTORY_ITEM, size=(self.size, self.size))
         self.hotbar_texture_dark = self.spritesheet_ui.image(UI_INVENTORY_ITEM_DARK, size=(self.size, self.size))
         self.last_mouse_press = time.time()
@@ -25,18 +26,30 @@ class Crafting:
 
         idx = 0
         for recipe in CRAFTING_RECIPES:
+            if idx < self.start_index:
+                idx += 1
+                continue
+
             text = recipe.lower() + ':'
             req_items = []
+            result = CRAFTING_RECIPES[recipe][-1][0]
+            result_texture = self.spritesheet.image(result, size=(self.size - 10, self.size - 10))
+
             for i in range(len(CRAFTING_RECIPES[recipe]) - 1):
                 item = CRAFTING_RECIPES[recipe][i]
             #for item in CRAFTING_RECIPES[recipe]:
-                text += f" {item[1]}x{ID_STR(item[0]).lower()}"
+                text += f" {item[1]} {ID_STR(item[0]).lower()} &"
                 req_items.append(item)
 
-            Text(self.font, text, (0, 0, 0), (pos[0] + 30, pos[1] + 10 + 30 * idx)).draw(self.window.get())
+            text = text.replace("_", " ")
+            text = text[:-1]
+            Text(self.font, text, (0, 0, 0), (pos[0] + self.size + 5, pos[1] + 15 + self.size * (idx - self.start_index))).draw(self.window.get())
             
-            if collide_point([pos[0], pos[1] + 5 + 30 * idx, self.size, self.size], pygame.mouse.get_pos()):
-                self.window.get().blit(self.hotbar_texture_dark, (pos[0], pos[1] + 5 + 30 * idx))
+            if collide_point([pos[0], pos[1] + 5 + self.size * (idx - self.start_index), self.size, self.size], pygame.mouse.get_pos()):
+                hpos = (pos[0], pos[1] + 5 + self.size * (idx - self.start_index))
+                self.window.get().blit(self.hotbar_texture_dark, hpos)
+                self.window.get().blit(result_texture, (hpos[0] + 5, hpos[1] + 5))
+                
                 if pygame.mouse.get_pressed()[0] and time.time() - self.last_mouse_press > 0.3:
                     self.last_mouse_press = time.time()
                     req_pass = True
@@ -50,9 +63,16 @@ class Crafting:
                         inventory.add_item(item)
                         
             else:
-                self.window.get().blit(self.hotbar_texture, (pos[0], pos[1] + 5 + 30 * idx))
+                hpos = (pos[0], pos[1] + 5 + self.size * (idx - self.start_index))
+                self.window.get().blit(self.hotbar_texture, hpos)
+                self.window.get().blit(result_texture, (hpos[0] + 5, hpos[1] + 5))
             idx += 1
 
+
+    def scroll(self, dy: int):
+        self.start_index += dy
+        if self.start_index < 0:
+            self.start_index = 0
 
 CRAFTING_RECIPES = {
     "STICK": [(LOG, 2), (STICK, 4)],
@@ -61,8 +81,11 @@ CRAFTING_RECIPES = {
     "STONE PICKAXE": [(STICK, 2), (STONE, 3), (STONE_PICKAXE, 1)],
     "PLANKS BLOCK": [(PLANK, 4), (PLANK_BLOCK, 1)],
     "PLANKS FLOOR": [(PLANK, 4), (PLANK_FLOOR, 1)],
+    "CRAFTING TABLE": [(PLANK, 4), (IRON_INGOT, 3), (CRAFTING_TABLE, 1)],
     "DOOR": [(PLANK, 6), (DOOR_CLOSED, 1)],
     "CAMPFIRE": [(STICK, 4), (COAL, 2), (STONE, 3), (CAMPFIRE_1, 1)],
     "BRICK_BLOCK": [(BRICK, 4), (BRICK_BLOCK, 1)],
-    "TORCH": [(COAL, 1), (STICK, 2), (TORCH, 1)]
+    "TORCH": [(COAL, 1), (STICK, 2), (TORCH, 1)],
+    "IRON AXE": [(STICK, 2), (IRON_INGOT, 3), (AXE, 1)],
+    "IRON PICKAXE": [(STICK, 2), (IRON_INGOT, 3), (PICKAXE, 1)]
 }

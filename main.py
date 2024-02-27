@@ -99,20 +99,24 @@ class Main:
                     if e.key == pygame.K_SLASH:
                         command = input(">")
                         self.commands.process_command(command)
-                if self.state == INGAME:
+                if self.state == INGAME or self.state == CRAFTING:
                     if e.type == pygame.MOUSEWHEEL:
-                        self.environment.player.inventory.change_item(e.y)
-                    if e.type == pygame.MOUSEBUTTONDOWN:
-                        mouse = pygame.mouse.get_pressed()
-                        if mouse[0]:
-                            res = self.environment.player.attack()
-                            if res is not None and res[0] == "ENTITY":
-                                pos = self.environment.player.selected_entity.enemy.center
-                                self.environment.floating_texts.append(FloatingText(self.font, f"-{res[1]}", (200, 50, 50), (pos[0] + self.environment.player.offset[0], pos[1] + self.environment.player.offset[1]), (0, 0.3), fadeout=.5))
-                        if mouse[2]:
-                            r = self.environment.player.place()
-                            if r == "CRAFT":
-                                self.state = CRAFTING
+                        if self.state == CRAFTING:
+                            self.environment.player.crafting.scroll(-e.y)
+                        else:
+                            self.environment.player.inventory.change_item(e.y)
+                    if self.state == INGAME:
+                        if e.type == pygame.MOUSEBUTTONDOWN:
+                            mouse = pygame.mouse.get_pressed()
+                            if mouse[0]:
+                                res = self.environment.player.attack()
+                                if res is not None and res[0] == "ENTITY":
+                                    pos = self.environment.player.selected_entity.enemy.center
+                                    self.environment.floating_texts.append(FloatingText(self.font, f"-{res[1]}", (200, 50, 50), (pos[0] + self.environment.player.offset[0], pos[1] + self.environment.player.offset[1]), (0, 0.3), fadeout=.5))
+                            if mouse[2]:
+                                r = self.environment.player.place()
+                                if r == "CRAFT":
+                                    self.state = CRAFTING
             if self.environment.player.underground:
                 self.window.set_color((20, 9, 5))
 

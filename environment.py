@@ -40,7 +40,7 @@ class Environment:
         self.light_sources = [[], []]
         self.particles = [Particles(self.window, self.spritesheet, (0, 0), 5), Particles(self.window, self.spritesheet, (0, 0), 5)]
 
-        self.time = 8000
+        self.time = 2000
         self.time_direction = 1
         self.time_acceleration = .1
         self.light_filter = pygame.surface.Surface(self.window.size)
@@ -297,15 +297,14 @@ class Environment:
             if self.in_boundaries(block, offset):
                 block.draw(offset=offset)
                 
-                for light_source in self.light_sources[0]:
-                    if light_source.in_range(block) and block.pos not in light_blocks:
-                        light_source.draw(block, offset)
-                        light_blocks.append(block.pos)
+                if block.texture_id in LIGHT_AFFECTED_BLOCKS:
+                    for light_source in self.light_sources[0]:
+                        if light_source.in_range(block):
+                            light_source.draw(block, offset)
 
-                if self.player.produce_light:
-                    if self.player.light.in_range(block) and block.pos not in light_blocks:
-                        self.player.light.draw(block, offset)
-                        light_blocks.append(block.pos)
+                    if self.player.produce_light:
+                        if self.player.light.in_range(block) and block.pos not in light_blocks:
+                            self.player.light.draw(block, offset)
                 
                 if block.texture_id == GRASS_BLOCK_DUG:
                     if random.random() > 0.999:
