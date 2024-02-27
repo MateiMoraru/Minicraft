@@ -71,8 +71,6 @@ class Enemy:
         elif self.direction == "right" and not self.collided[3]:
             move[0] = 1 * self.speed * self.window.delta_time
 
-        print(self.direction, move[0] / self.window.delta_time, move[1] / self.window.delta_time)
-
         self.enemy.move(move[0], move[1])
         self.animation()
         

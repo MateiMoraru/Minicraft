@@ -34,6 +34,7 @@ class Chest:
         for i in range(self.length * self.length):
             self.items.append([-1, -1])
 
+
     def draw(self, offset: Tuple[int, int], inventory: Inventory, underground: bool=False):
         self.center = self.rect.center
         self.selected_chest_slot = None
@@ -89,7 +90,7 @@ class Chest:
             if random.random() > 0.5 * rarity / 3:
                 idx = random.randint(0, 63)
                 while self.items[idx][0] != -1:
-                    idx = random.randint(0, 64)
+                    idx = random.randint(0, 63)
                 self.items[idx] = [item[0], random.randint(1, item[1])]
 
 CHEST_RANDOMIZER = [
